@@ -27,11 +27,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    vector3d.cpp
+    vector3d.cpp \
+    model3d.cpp \
+    triangle3d.cpp \
+    vertex3d.cpp \
+    objparser.cpp
 
 HEADERS += \
         mainwindow.h \
-    vector3d.h
+    vector3d.h \
+    model3d.h \
+    triangle3d.h \
+    vertex3d.h \
+    objparser.h
 
 FORMS += \
         mainwindow.ui
+
+DISTFILES += \
+    ../ProjectTest/cube.obj
+

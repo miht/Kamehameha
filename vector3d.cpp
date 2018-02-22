@@ -1,4 +1,5 @@
 #include "vector3d.h"
+#include <iostream>
 #include <QtMath>
 
 Vector3D::Vector3D(double x, double y, double z)
@@ -23,4 +24,9 @@ Vector3D Vector3D::cross_prod(Vector3D a, Vector3D b)
     double y = -(a.x * b.z - b.x * a.z);
     double z = a.x * b.y - b.x * a.y;
     return Vector3D(x, y, z);
+}
+
+std::ostream & operator<<(std::ostream & Str, Vector3D const & v) {
+    Str << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+    return Str;
 }
