@@ -10,7 +10,7 @@ public:
     static Model3D parse(std::string path);
 
 private:
-    ObjParser() {}
+    ObjParser();
 };
 
 #endif // OBJPARSER_H
