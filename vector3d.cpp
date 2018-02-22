@@ -8,6 +8,13 @@ Vector3D::Vector3D(double x, double y, double z)
 
 }
 
+Vector3D::Vector3D()
+{
+    x = 0;
+    y = 0;
+    z = 0;
+}
+
 double Vector3D::norm()
 {
     return qSqrt(x * x + y * y + z * z);
