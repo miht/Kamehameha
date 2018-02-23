@@ -1,12 +1,18 @@
 #ifndef MODEL3D_H
 #define MODEL3D_H
-#include "triangle3d.h"
+#include <QMap>
 #include <vector>
+
+#include "triangle3d.h"
+#include "material.h"
 
 class Model3D
 {
 public:
     std::vector<Triangle3D> triangles;
+    bool smoothlyShaded = false;
+    QMap<QString, Material> materials;
+
     Model3D();
 };
 

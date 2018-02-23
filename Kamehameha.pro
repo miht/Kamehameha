@@ -32,7 +32,8 @@ SOURCES += \
     triangle3d.cpp \
     vertex3d.cpp \
     objparser.cpp \
-    vector2d.cpp
+    vector2d.cpp \
+    material.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -41,7 +42,8 @@ HEADERS += \
     triangle3d.h \
     vertex3d.h \
     objparser.h \
-    vector2d.h
+    vector2d.h \
+    material.h
 
 FORMS += \
         mainwindow.ui

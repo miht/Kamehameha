@@ -10,17 +10,19 @@ ObjParser::ObjParser()
 
 Model3D ObjParser::parse(QString path)
 {
-    Model3D m = Model3D();
+    Model3D model = Model3D();
+
+    model.materials = parseMaterial(path);
 
     std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
     std::vector<Vector3D> temp_vertices;
     std::vector<Vector2D> temp_uvs;
     std::vector<Vector3D> temp_normals;
 
-    QFile file(path);
+    QFile file(path + ".obj");
        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-           qDebug("Could not open the file.\n");
-           return m;
+           qDebug("Could not open object file.\n");
+           return model;
        }
 
     while (!file.atEnd()) {
@@ -36,7 +38,7 @@ Model3D ObjParser::parse(QString path)
         } else if (sl.value(0) == "vn") {
             Vector3D normal = Vector3D(sl.value(1).toDouble() ,sl.value(2).toDouble(), sl.value(3).toDouble());
             temp_normals.push_back(normal);
-        } else if (sl.value(0) == "f"){
+        } else if (sl.value(0) == "f") {
             std::string vertex1, vertex2, vertex3;
             unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
             for(int i = 0; i < 3; i++) {
@@ -54,7 +56,7 @@ Model3D ObjParser::parse(QString path)
             Vertex3D v2 = Vertex3D(Vector3D(temp_vertices[vertexIndex[1] - 1]), Vector3D(temp_normals[normalIndex[1] - 1]));
             Vertex3D v3 = Vertex3D(Vector3D(temp_vertices[vertexIndex[2] - 1]), Vector3D(temp_normals[normalIndex[2] - 1]));
 
-            m.triangles.push_back(Triangle3D(v1, v2, v3));
+            model.triangles.push_back(Triangle3D(v1, v2, v3));
 
             //          uvIndices.push_back(uvIndex[0]);
             //          uvIndices.push_back(uvIndex[1]);
@@ -63,8 +65,50 @@ Model3D ObjParser::parse(QString path)
             //          normalIndices.push_back(normalIndex[0]);
             //          normalIndices.push_back(normalIndex[1]);
             //          normalIndices.push_back(normalIndex[2]);
+        } else if(sl.value(0) == "s") {
+            model.smoothlyShaded = sl.value(1) != "off";
         }
     }
     file.close ();
-    return m;
+    return model;
 }
+
+QMap<QString, Material> ObjParser::parseMaterial(QString path) {
+    QMap<QString, Material> materials;
+    QFile file(path + ".mtl");
+       if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+           qDebug("Could not open material file.\n");
+           return materials;
+       }
+
+       while (!file.atEnd()) {
+           QString line = file.readLine();
+           QStringList sl = line.split(" ");
+
+           if(sl.value(0) == "newmtl") {
+               QString mat_name = sl.value(1);
+               Material material;
+
+               material.spec_exp = file.readLine ().trimmed().split(' ').value(1).toDouble ();
+
+               QList<QByteArray> line_ambient = file.readLine().trimmed().split(' ');
+               material.ambient = Vector3D(line_ambient.value(1).toDouble(),
+                                           line_ambient.value(2).toDouble(), line_ambient.value(3).toDouble());
+
+               QList<QByteArray> line_diffuse = file.readLine().trimmed().split(' ');
+               material.diffuse = Vector3D(line_diffuse.value(1).toDouble(),
+                                           line_diffuse.value(2).toDouble(), line_diffuse.value(3).toDouble());
+
+              QList<QByteArray> line_specular = file.readLine().trimmed().split(' ');
+               material.specular = Vector3D(line_specular.value(1).toDouble(),
+                                           line_specular.value(2).toDouble(), line_specular.value(3).toDouble());
+
+           materials.insert(mat_name, material);
+           }
+       }
+
+       file.close();
+       return materials;
+}
+
+

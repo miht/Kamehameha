@@ -2,6 +2,7 @@
 #define OBJPARSER_H
 
 #include <QString>
+#include <QMap>
 
 #include "model3d.h"
 #include "vector2d.h"
@@ -15,6 +16,7 @@ public:
 
 private:
     ObjParser();
+    static QMap<QString, Material> parseMaterial(QString path);
 };
 
 #endif // OBJPARSER_H
