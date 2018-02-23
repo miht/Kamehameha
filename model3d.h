@@ -10,7 +10,7 @@ class Model3D
 {
 public:
     std::vector<Triangle3D> triangles;
-    bool smoothlyShaded = false;
+    bool smooth = false;
     QMap<QString, Material> materials;
 
     Model3D();
