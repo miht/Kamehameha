@@ -1,6 +1,4 @@
 #include "vector3d.h"
-#include <iostream>
-#include <QtMath>
 
 Vector3D::Vector3D(double x, double y, double z)
     : x(x), y(y), z(z)
@@ -33,7 +31,10 @@ Vector3D Vector3D::cross_prod(Vector3D a, Vector3D b)
     return Vector3D(x, y, z);
 }
 
-std::ostream & operator<<(std::ostream & Str, Vector3D const & v) {
-    Str << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-    return Str;
+std::ostream & operator<<(std::ostream & Str, const Vector3D& v) {
+    return Str << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+}
+
+QDebug operator<< (QDebug d, const Vector3D &v) {
+    return d << "(" << v.x << ", " << v.y << ", " << v.z << ")";
 }

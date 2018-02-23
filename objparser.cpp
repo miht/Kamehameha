@@ -1,57 +1,51 @@
 #include "objparser.h"
-#include "model3d.h"
-#include "vertex3d.h"
-#include <glm/vec3.hpp>
-#include <glm/vec2.hpp>
-#include <string.h>
+#include <QDebug>
+#include <QFile>
+#include <QStringList>
+#include <QString>
 
 ObjParser::ObjParser()
 {
 }
 
-Model3D ObjParser::parse(std::string path)
+Model3D ObjParser::parse(QString path)
 {
     Model3D m = Model3D();
 
     std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
     std::vector<Vector3D> temp_vertices;
-    std::vector<glm::vec2> temp_uvs;
+    std::vector<Vector2D> temp_uvs;
     std::vector<Vector3D> temp_normals;
 
-    FILE * file = fopen(path.c_str(), "r");
-    if( file == NULL ){
-        printf("Could not open the file.\n");
-        return m;
-    }
+    QFile file(path);
+       if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+           qDebug("Could not open the file.\n");
+           return m;
+       }
 
-    while( 1 ){
-        char lineHeader[128];
-        // read the first word of the line
-        int res = fscanf(file, "%s", lineHeader);
-        if (res == EOF)
-            break; // EOF = End Of File. Quit the loop.
+    while (!file.atEnd()) {
+        QString line = file.readLine();
+        QStringList sl = line.split(" ");
 
-        // else : parse lineHeader
-        if (strcmp(lineHeader, "v") == 0){
-            Vector3D vertex = Vector3D();
-            fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
+        if (sl.value(0) == "v"){
+            Vector3D vertex = Vector3D(sl.value(1).toDouble() ,sl.value(2).toDouble(), sl.value(3).toDouble());
             temp_vertices.push_back(vertex);
-        } else if (strcmp(lineHeader, "vt") == 0) {
-            glm::vec2 uv;
-            fscanf(file, "%f %f\n", &uv.x, &uv.y);
+        } else if (sl.value(0) == "vt") {
+            Vector2D uv = Vector2D(sl.value(1).toDouble(), sl.value(2).toDouble());
             temp_uvs.push_back(uv);
-        } else if (strcmp(lineHeader, "vn") == 0) {
-            Vector3D normal = Vector3D();
-            fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
+        } else if (sl.value(0) == "vn") {
+            Vector3D normal = Vector3D(sl.value(1).toDouble() ,sl.value(2).toDouble(), sl.value(3).toDouble());
             temp_normals.push_back(normal);
-        } else if (strcmp(lineHeader, "f") == 0){
+        } else if (sl.value(0) == "f"){
             std::string vertex1, vertex2, vertex3;
             unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
-            int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
-            if (matches != 9) {
-                printf("File can't be read by our simple parser : ( Try exporting with other options\n");
-                return m;
+            for(int i = 0; i < 3; i++) {
+                QStringList vertex_line = sl.value(1 + i).split("/");
+                vertexIndex[i] = vertex_line.value(0).toInt();
+                uvIndex[i] = vertex_line.value(1).toInt();
+                normalIndex[i] = vertex_line.value(2).toInt();
             }
+
             vertexIndices.push_back(vertexIndex[0]);
             vertexIndices.push_back(vertexIndex[1]);
             vertexIndices.push_back(vertexIndex[2]);
@@ -70,7 +64,7 @@ Model3D ObjParser::parse(std::string path)
             //          normalIndices.push_back(normalIndex[1]);
             //          normalIndices.push_back(normalIndex[2]);
         }
-
-        return m;
     }
+    file.close ();
+    return m;
 }
