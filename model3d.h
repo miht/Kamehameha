@@ -3,13 +3,13 @@
 #include <QMap>
 #include <vector>
 
-#include "triangle3d.h"
+#include "triangle.h"
 #include "material.h"
 
 class Model3D
 {
 public:
-    std::vector<Triangle3D> triangles;
+    std::vector<Triangle> triangles;
     bool smooth = false;
     QMap<QString, Material> materials;
 

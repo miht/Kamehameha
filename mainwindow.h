@@ -5,6 +5,7 @@
 
 #include <QtDebug>
 #include <QGraphicsScene>
+#include <QPixmap>
 
 namespace Ui {
 class MainWindow;
@@ -17,7 +18,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
 
-     QGraphicsScene *graphic;
+     QGraphicsView *gv;
+     QPixmap generatePixmap();
+
     ~MainWindow();
 
 private:

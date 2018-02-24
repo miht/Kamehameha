@@ -17,9 +17,33 @@ MainWindow::MainWindow(QWidget *parent) :
 //        qDebug() << m_key << ": " << mod.materials.value (m_key);
 //    }
 
-    graphic = new QGraphicsScene(this);
+    QGraphicsScene *graphic = new QGraphicsScene(this);
+    qDebug() << "*graphics width: " << graphic->width();
+    gv = ui->graphicsView;
+    gv->sizePolicy ().setHeightForWidth (true);
     graphic -> addPixmap(generatePixmap());
-    ui->graphicsView->setScene(graphic);
+    gv->setScene(graphic);
+
+}
+
+QPixmap MainWindow::generatePixmap() {
+    int r = 1;
+    int g = 1;
+    int b = 0;
+
+
+    QImage img = QImage(gv->width (), gv->height (), QImage::Format_RGB32);
+    qDebug() << "gv width: " << gv->width () << "; h" << gv->height ();
+    qDebug() << "gv act width: " << gv->size ().width () << "; h" << gv->size ().height ();
+
+    qDebug() << "img w: " << img.width() << ", h" << img.height();
+
+    for(int i = 0; i < img.width(); i++) {
+        for(int j = 0; j < img.height(); j++) {
+            img.setPixelColor(i, j, QColor(r, g, b));
+        }
+    }
+    return QPixmap::fromImage(img);
 }
 
 MainWindow::~MainWindow()

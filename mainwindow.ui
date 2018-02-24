@@ -21,7 +21,7 @@
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,3">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
         <property name="spacing">
          <number>-1</number>
         </property>
@@ -31,15 +31,15 @@
         <item>
          <widget class="QGraphicsView" name="graphicsView">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>4</horstretch>
-            <verstretch>3</verstretch>
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
            </sizepolicy>
           </property>
           <property name="minimumSize">
            <size>
-            <width>200</width>
-            <height>150</height>
+            <width>400</width>
+            <height>300</height>
            </size>
           </property>
          </widget>

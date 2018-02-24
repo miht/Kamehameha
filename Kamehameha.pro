@@ -29,21 +29,23 @@ SOURCES += \
         mainwindow.cpp \
     vector3d.cpp \
     model3d.cpp \
-    triangle3d.cpp \
     vertex3d.cpp \
     objparser.cpp \
     vector2d.cpp \
-    material.cpp
+    material.cpp \
+    ray.cpp \
+    triangle.cpp
 
 HEADERS += \
         mainwindow.h \
     vector3d.h \
     model3d.h \
-    triangle3d.h \
     vertex3d.h \
     objparser.h \
     vector2d.h \
-    material.h
+    material.h \
+    ray.h \
+    triangle.h
 
 FORMS += \
         mainwindow.ui
