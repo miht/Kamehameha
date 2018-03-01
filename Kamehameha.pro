@@ -26,7 +26,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp \
     vector3d.cpp \
     model3d.cpp \
     vertex3d.cpp \
@@ -34,10 +33,12 @@ SOURCES += \
     vector2d.cpp \
     material.cpp \
     ray.cpp \
-    triangle.cpp
+    triangle.cpp \
+    kamehameha.cpp \
+    raytracer.cpp \
+    color.cpp
 
 HEADERS += \
-        mainwindow.h \
     vector3d.h \
     model3d.h \
     vertex3d.h \
@@ -45,7 +46,10 @@ HEADERS += \
     vector2d.h \
     material.h \
     ray.h \
-    triangle.h
+    triangle.h \
+    kamehameha.h \
+    raytracer.h \
+    color.h
 
 FORMS += \
         mainwindow.ui
