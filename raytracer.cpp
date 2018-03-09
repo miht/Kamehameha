@@ -10,45 +10,35 @@ RayTracer::RayTracer()
 {
     w = DEFAULT_WIDTH;
     h = DEFAULT_HEIGHT;
+
+    mod = ObjParser::parse("/Users/leifthysellsundqvist/Library/Mobile Documents/com~apple~CloudDocs/Skolan/Y4/VisGraf18/ProjectTest/well_raytracer");
 }
 
 RayTracer::RayTracer(int w, int h) :
     w(w), h(h)
 {
-}
-
-void RayTracer::trace(QTextStream &out, QProgressBar *progress, QPixmap &pixmap)
-{
-    // Plain PPM format
-    out << "P3\n" << w << ' ' << h << ' ' << "255\n";
-
     //load model here ? ugly yes, working yes
     //this should be done elsewhere, too heavy to load model each trace attempt
-    Model3D mod = ObjParser::parse("/Users/leifthysellsundqvist/Library/Mobile Documents/com~apple~CloudDocs/Skolan/Y4/VisGraf18/ProjectTest/cube");
+    mod = ObjParser::parse("/Users/leifthysellsundqvist/Library/Mobile Documents/com~apple~CloudDocs/Skolan/Y4/VisGraf18/ProjectTest/well_raytracer");
 
-    //initialize the pixmap, draw a simple grey background
-    pixmap = QPixmap(w, h);
-    QPainter pixpaint(&pixmap);
-    pixpaint.setPen (Qt::gray);
-    pixpaint.drawRect(0,0,w, h);
+}
+
+QImage RayTracer::trace(QProgressBar *progress, int xOffset, int yOffset, int width, int height)
+{
+    // Plain PPM format
+    //out << "P3\n" << w << ' ' << h << ' ' << "255\n";
+    QImage img = QImage(width, height, QImage::Format_RGB32);
+    img.setOffset (QPoint(xOffset, yOffset));
 
     // Iterate over all pixels in image
-    for (int x = 0; x < w; x++) {
-        for (int y = 0; y < h; y++) {
-
-            //Color pixelColor = Color();
-
-            // TODO: Decide color of pixel
-
-//            out << (int) pixelColor.r << ' ' <<
-//                   (int) pixelColor.g << ' ' <<
-//                   (int) pixelColor.b << '\n';
-
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+            QColor color;
 
             QString set_material = "None";
             double shortest = 20000;
 
-            Vector3D worldPos = screenToWorldCoordinates (Vector3D(x, y, 0));
+            Vector3D worldPos = screenToWorldCoordinates (Vector3D(x + xOffset, y + yOffset, 0));
             Ray ray(worldPos, Vector3D(0, 0, 1));
             for(Triangle tri : mod.triangles) {
                 double dist = 20000;
@@ -63,18 +53,17 @@ void RayTracer::trace(QTextStream &out, QProgressBar *progress, QPixmap &pixmap)
             }
 
             if(set_material != "None") {
-                Vector3D col = 255*mod.materials.value (set_material).diffuse;
-                QColor color = QColor::fromRgb (col.x, col.y, col.z);
-                pixpaint.setPen(color);
-//                qDebug() << col;
+                Vector3D col = mod.materials.value (set_material).diffuse;
+                color = QColor(255*col.x, 255*col.y, 255*col.z);
             }
             else {
-                pixpaint.setPen(Qt::white);
+                color = QColor(0, 0, 0); //black
             }
-            pixpaint.drawPoint (x, y);                  //draw the pixel
-            progress->setValue(progress->value() + 1); //update progress bar
+            img.setPixelColor(x, y, color);
+            //progress->setValue(progress->value() + 1); //update progress bar
         }
     }
+    return img;
 }
 
 Vector3D RayTracer::screenToWorldCoordinates(const Vector3D vec) {

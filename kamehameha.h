@@ -1,11 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QtConcurrent>
 #include <QMainWindow>
 #include <QPushButton>
 #include <QTextBrowser>
 #include <QProgressBar>
 #include <QPixmap>
+#include <QGraphicsPixmapItem>
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -20,6 +22,7 @@ class Kamehameha : public QMainWindow
     Q_OBJECT
 
 public:
+    int width, height;
     explicit Kamehameha(QWidget *parent = 0);
 
     ~Kamehameha();

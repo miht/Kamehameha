@@ -13,9 +13,6 @@ Model3D ObjParser::parse(QString path)
     Model3D model = Model3D();
 
     model.materials = parseMaterial(path);
-    for(Material m : model.materials.values()) {
-        qDebug() << m;
-    }
 
     std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
     std::vector<Vector3D> temp_vertices;
@@ -116,7 +113,6 @@ QMap<QString, Material> ObjParser::parseMaterial(QString path) {
                                            line_specular.value(2).toDouble(), line_specular.value(3).toDouble());
 
            materials.insert(mat_name, material);
-           //qDebug() << material;
            }
        }
 

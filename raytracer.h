@@ -3,7 +3,8 @@
 
 #include <QProgressBar>
 #include <QTextStream>
-#include <QPixmap>
+#include <QImage>
+#include <QGraphicsScene>
 #include <QPainter>
 
 #include <QDebug>
@@ -17,11 +18,14 @@ class RayTracer
 public:
     RayTracer();
     RayTracer(int w, int h);
-    void trace(QTextStream  &out, QProgressBar *progress, QPixmap &pixmap);
+    QImage trace(QProgressBar *progress, int xOffset, int yOffset, int width, int height);
+
     int w;
     int h;
 
 private:
+    Model3D mod;
+
     Vector3D screenToWorldCoordinates(const Vector3D vec);
     Vector3D worldToScreenCoordinates(const Vector3D vec);
 };

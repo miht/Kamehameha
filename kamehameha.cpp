@@ -11,6 +11,8 @@ Kamehameha::Kamehameha(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    width = height = 400;
+
     // get widgets
     ui_renderButton = findChild<QPushButton*>("renderButton");
     ui_cancelButton = findChild<QPushButton*>("cancelButton");
@@ -21,6 +23,7 @@ Kamehameha::Kamehameha(QWidget *parent) :
 
     //Initialize graphic elements
     graphicsScene = new QGraphicsScene(this);
+    graphicsScene->setSceneRect (0, 0, width, width);
     graphicsView = ui->graphicsView;
 
 }
@@ -28,7 +31,7 @@ Kamehameha::Kamehameha(QWidget *parent) :
 void Kamehameha::on_renderButton_clicked()
 {
     // TODO get resolution from user input
-    RayTracer rt = RayTracer();
+    RayTracer rt = RayTracer(width, height);
 
     // configure progress bar
     ui_renderProgressBar->setMinimum(0);
@@ -37,12 +40,34 @@ void Kamehameha::on_renderButton_clicked()
     QFile file("out.ppm"); // TODO: file selection
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream out(&file);
-        QPixmap pixmap;
-        rt.trace(out, ui_renderProgressBar, pixmap);
-        graphicsScene->addPixmap (pixmap);
+//        rt.trace(out, ui_renderProgressBar, pixmap);
+
+        QFutureSynchronizer<QImage> synchronizer;
+
+        for(int i = 0; i < rt.w; i+= rt.w/4) {
+            for(int j = 0; j < rt.h; j += rt.h/4) {
+                        synchronizer.addFuture (QtConcurrent::run(rt, &RayTracer::trace,
+                                                                 ui_renderProgressBar,
+                                                                 i, j, rt.w/4, rt.h/4));
+            }
+        }
+//        synchronizer.addFuture (QtConcurrent::run(rt, &RayTracer::trace,
+//                                                 ui_renderProgressBar,
+//                                                 0, 0, rt.w/2, rt.h/2));
+//        synchronizer.addFuture (QtConcurrent::run(rt, &RayTracer::trace,
+//                                                 ui_renderProgressBar,
+//                                                 rt.w/2, 0, rt.w/2, rt.h/2));
+
+        synchronizer.waitForFinished ();
+        for(QImage img : synchronizer.futures ()) {
+            QGraphicsPixmapItem* item = graphicsScene->addPixmap(QPixmap::fromImage (img));
+            item->setPos(img.offset ());
+        }
+//        future.waitForFinished ();
+
+//        graphicsScene->addPixmap (QPixmap::fromImage (img));
         graphicsView->setScene(graphicsScene);
     }
-
     file.close();
 }
 
