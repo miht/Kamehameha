@@ -5,6 +5,11 @@
 #include <QPushButton>
 #include <QTextBrowser>
 #include <QProgressBar>
+#include <QPixmap>
+
+#include <QGraphicsScene>
+#include <QGraphicsView>
+
 
 namespace Ui {
 class MainWindow;
@@ -29,6 +34,9 @@ private:
     QPushButton *ui_cancelButton;
     QTextBrowser *ui_logBrowser;
     QProgressBar *ui_renderProgressBar;
+
+    QGraphicsScene *graphicsScene;
+    QGraphicsView *graphicsView;
 };
 
 #endif // MAINWINDOW_H

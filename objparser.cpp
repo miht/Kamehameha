@@ -13,6 +13,9 @@ Model3D ObjParser::parse(QString path)
     Model3D model = Model3D();
 
     model.materials = parseMaterial(path);
+    for(Material m : model.materials.values()) {
+        qDebug() << m;
+    }
 
     std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
     std::vector<Vector3D> temp_vertices;
@@ -25,14 +28,16 @@ Model3D ObjParser::parse(QString path)
            return model;
        }
 
+       QString current_material = "";
+
     while (!file.atEnd()) {
         QString line = file.readLine().trimmed();
         QStringList sl = line.split(" ");
 
-        QString current_material = "";
-
         if (sl.value(0) == "v"){
-            Vector3D vertex = Vector3D(sl.value(1).toDouble() ,sl.value(2).toDouble(), sl.value(3).toDouble());
+            Vector3D vertex = Vector3D(sl.value(1).toDouble(),
+                            -sl.value(2).toDouble(), //negative y value to turn things upside down
+                             -sl.value(3).toDouble()); //negative z value to compensate for export y-direction in blender
             temp_vertices.push_back(vertex);
         } else if (sl.value(0) == "vt") {
             Vector2D uv = Vector2D(sl.value(1).toDouble(), sl.value(2).toDouble());
@@ -61,6 +66,9 @@ Model3D ObjParser::parse(QString path)
             Vertex3D v3 = Vertex3D(Vector3D(temp_vertices[vertexIndex[2] - 1]), Vector3D(temp_normals[normalIndex[2] - 1]));
 
             model.triangles.push_back(Triangle(v1, v2, v3, current_material));
+//            qDebug() << current_material;
+
+            //TODO implement UV mappings
 
             //          uvIndices.push_back(uvIndex[0]);
             //          uvIndices.push_back(uvIndex[1]);
@@ -90,7 +98,7 @@ QMap<QString, Material> ObjParser::parseMaterial(QString path) {
            QStringList sl = line.split(" ");
 
            if(sl.value(0) == "newmtl") {
-               QString mat_name = sl.value(1);
+               QString mat_name = sl.value(1).trimmed();
                Material material;
 
                material.spec_exp = file.readLine ().trimmed().split(' ').value(1).toDouble ();
@@ -108,6 +116,7 @@ QMap<QString, Material> ObjParser::parseMaterial(QString path) {
                                            line_specular.value(2).toDouble(), line_specular.value(3).toDouble());
 
            materials.insert(mat_name, material);
+           //qDebug() << material;
            }
        }
 

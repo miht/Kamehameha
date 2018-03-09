@@ -18,6 +18,11 @@ Kamehameha::Kamehameha(QWidget *parent) :
     ui_renderProgressBar = findChild<QProgressBar*>("renderProgressBar");
 
     ui_renderProgressBar->setValue(0);
+
+    //Initialize graphic elements
+    graphicsScene = new QGraphicsScene(this);
+    graphicsView = ui->graphicsView;
+
 }
 
 void Kamehameha::on_renderButton_clicked()
@@ -32,7 +37,10 @@ void Kamehameha::on_renderButton_clicked()
     QFile file("out.ppm"); // TODO: file selection
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream out(&file);
-        rt.trace(out, ui_renderProgressBar);
+        QPixmap pixmap;
+        rt.trace(out, ui_renderProgressBar, pixmap);
+        graphicsScene->addPixmap (pixmap);
+        graphicsView->setScene(graphicsScene);
     }
 
     file.close();
