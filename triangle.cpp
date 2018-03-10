@@ -5,7 +5,7 @@ Triangle::Triangle(Vertex3D v1, Vertex3D v2, Vertex3D v3, QString material)
 {
 }
 
-bool Triangle::intersects(Ray ray, double &dist, QString& mat) {
+bool Triangle::intersects(Ray ray, float &dist, Intersection &intersection) {
     float epsilon = 0.00001;
 
         Vector3D vec0 = v1.position;
@@ -19,7 +19,7 @@ bool Triangle::intersects(Ray ray, double &dist, QString& mat) {
         edge1 = vec1 - vec0;
         edge2 = vec2 - vec0;
 
-        //Vector3D normal = Vector3D::cross_prod (edge1, edge2).normalized();
+        Vector3D normal = Vector3D::cross_prod (edge1, edge2).normalized();
         pvec = Vector3D::cross_prod(ray.direction, edge2);
 
         det = Vector3D::dot_prod (edge1, pvec); //det
@@ -42,10 +42,12 @@ bool Triangle::intersects(Ray ray, double &dist, QString& mat) {
 
         //qDebug() << "check 4";
 
-        double t = inv_det * Vector3D::dot_prod (edge2, qvec);
+        float t = inv_det * Vector3D::dot_prod (edge2, qvec);
+        if(t <= 0) return false; //distance negative => object is behind ray
 
         dist = t;
-        mat = material;
+        intersection = Intersection(ray.pointOnRay (dist), normal, material);
+        intersection.hit = true;
 
         //intersection = RayIntersection(ray,shared_from_this(), t, normal,Vector3D(0,0,0));
 

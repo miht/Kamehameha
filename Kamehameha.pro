@@ -36,7 +36,9 @@ SOURCES += \
     triangle.cpp \
     kamehameha.cpp \
     raytracer.cpp \
-    color.cpp
+    color.cpp \
+    light.cpp \
+    intersection.cpp
 
 HEADERS += \
     vector3d.h \
@@ -49,7 +51,9 @@ HEADERS += \
     triangle.h \
     kamehameha.h \
     raytracer.h \
-    color.h
+    color.h \
+    light.h \
+    intersection.h
 
 FORMS += \
         mainwindow.ui

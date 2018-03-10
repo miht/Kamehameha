@@ -31,7 +31,7 @@ Kamehameha::Kamehameha(QWidget *parent) :
 void Kamehameha::on_renderButton_clicked()
 {
     // TODO get resolution from user input
-    RayTracer rt = RayTracer(width, height);
+    RayTracer rt = RayTracer(width, height, Light(Vector3D(-2,-3,2)));
 
     // configure progress bar
     ui_renderProgressBar->setMinimum(0);
@@ -46,7 +46,7 @@ void Kamehameha::on_renderButton_clicked()
 
         for(int i = 0; i < rt.w; i+= rt.w/4) {
             for(int j = 0; j < rt.h; j += rt.h/4) {
-                        synchronizer.addFuture (QtConcurrent::run(rt, &RayTracer::trace,
+                        synchronizer.addFuture (QtConcurrent::run(rt, &RayTracer::generate,
                                                                  ui_renderProgressBar,
                                                                  i, j, rt.w/4, rt.h/4));
             }

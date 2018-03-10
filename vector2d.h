@@ -5,9 +5,9 @@
 class Vector2D
 {
 public:
-    double x, y;
+    float x, y;
     Vector2D();
-    Vector2D(double x, double y);
+    Vector2D(float x, float y);
 
 
 };

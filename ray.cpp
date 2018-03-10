@@ -5,3 +5,8 @@ Ray::Ray(Vector3D origin, Vector3D direction)
 {
 
 }
+
+Vector3D Ray::pointOnRay(float dist) {
+    return origin + dist * direction;
+}
+

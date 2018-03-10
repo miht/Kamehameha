@@ -32,15 +32,15 @@ Model3D ObjParser::parse(QString path)
         QStringList sl = line.split(" ");
 
         if (sl.value(0) == "v"){
-            Vector3D vertex = Vector3D(sl.value(1).toDouble(),
-                            -sl.value(2).toDouble(), //negative y value to turn things upside down
-                             -sl.value(3).toDouble()); //negative z value to compensate for export y-direction in blender
+            Vector3D vertex = Vector3D(sl.value(1).toFloat(),
+                            -sl.value(2).toFloat(), //negative y value to turn things upside down
+                             -sl.value(3).toFloat()); //negative z value to compensate for export y-direction in blender
             temp_vertices.push_back(vertex);
         } else if (sl.value(0) == "vt") {
-            Vector2D uv = Vector2D(sl.value(1).toDouble(), sl.value(2).toDouble());
+            Vector2D uv = Vector2D(sl.value(1).toFloat(), sl.value(2).toFloat());
             temp_uvs.push_back(uv);
         } else if (sl.value(0) == "vn") {
-            Vector3D normal = Vector3D(sl.value(1).toDouble() ,sl.value(2).toDouble(), sl.value(3).toDouble());
+            Vector3D normal = Vector3D(sl.value(1).toFloat() ,sl.value(2).toFloat(), sl.value(3).toFloat());
             temp_normals.push_back(normal);
         } else if (sl.value(0) == "usemtl"){
             current_material = sl.value(1);
@@ -98,19 +98,19 @@ QMap<QString, Material> ObjParser::parseMaterial(QString path) {
                QString mat_name = sl.value(1).trimmed();
                Material material;
 
-               material.spec_exp = file.readLine ().trimmed().split(' ').value(1).toDouble ();
+               material.spec_exp = file.readLine ().trimmed().split(' ').value(1).toFloat ();
 
                QList<QByteArray> line_ambient = file.readLine().trimmed().split(' ');
-               material.ambient = Vector3D(line_ambient.value(1).toDouble(),
-                                           line_ambient.value(2).toDouble(), line_ambient.value(3).toDouble());
+               material.ambient = Vector3D(line_ambient.value(1).toFloat(),
+                                           line_ambient.value(2).toFloat(), line_ambient.value(3).toFloat());
 
                QList<QByteArray> line_diffuse = file.readLine().trimmed().split(' ');
-               material.diffuse = Vector3D(line_diffuse.value(1).toDouble(),
-                                           line_diffuse.value(2).toDouble(), line_diffuse.value(3).toDouble());
+               material.diffuse = Vector3D(line_diffuse.value(1).toFloat(),
+                                           line_diffuse.value(2).toFloat(), line_diffuse.value(3).toFloat());
 
               QList<QByteArray> line_specular = file.readLine().trimmed().split(' ');
-               material.specular = Vector3D(line_specular.value(1).toDouble(),
-                                           line_specular.value(2).toDouble(), line_specular.value(3).toDouble());
+               material.specular = Vector3D(line_specular.value(1).toFloat(),
+                                           line_specular.value(2).toFloat(), line_specular.value(3).toFloat());
 
            materials.insert(mat_name, material);
            }

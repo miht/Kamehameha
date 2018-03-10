@@ -10,3 +10,7 @@ Color::Color(int r, int g, int b) :
 {
 
 }
+
+QColor Color::asQColor() {
+    return QColor(r, g, b);
+}
