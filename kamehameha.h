@@ -8,10 +8,14 @@
 #include <QProgressBar>
 #include <QPixmap>
 #include <QGraphicsPixmapItem>
-
+#include <QFile>
+#include <QTextStream>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
+#include "ui_mainwindow.h"
+#include "raytracer.h"
+#include "wireframer.h"
 
 namespace Ui {
 class MainWindow;

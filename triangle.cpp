@@ -3,6 +3,7 @@
 Triangle::Triangle(Vertex3D v1, Vertex3D v2, Vertex3D v3, QString material)
     :   v1(v1), v2(v2), v3(v3), material(material)
 {
+    type = Shape::triangle;
 }
 
 bool Triangle::intersects(Ray ray, float &dist, Intersection &intersection) {

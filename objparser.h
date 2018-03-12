@@ -4,7 +4,7 @@
 #include <QString>
 #include <QMap>
 
-#include "model3d.h"
+#include "model.h"
 #include "vector2d.h"
 #include "vector3d.h"
 #include "vertex3d.h"
@@ -12,7 +12,7 @@
 class ObjParser
 {
 public:
-    static Model3D parse(QString path);
+    static Model parse(QString path);
 
 private:
     ObjParser();

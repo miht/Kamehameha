@@ -2,7 +2,7 @@
 #include <QDebug>
 #include <iostream>
 #include "kamehameha.h"
-#include "model3d.h"
+#include "model.h"
 #include "triangle.h"
 #include "objparser.h"
 

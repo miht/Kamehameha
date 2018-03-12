@@ -6,14 +6,14 @@
 #include "triangle.h"
 #include "material.h"
 
-class Model3D
+class Model
 {
 public:
-    std::vector<Triangle> triangles;
+    std::vector<Shape> shapes;
     bool smooth = false;
     QMap<QString, Material> materials;
 
-    Model3D();
+    Model();
 };
 
 #endif // MODEL3D_H

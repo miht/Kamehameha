@@ -27,7 +27,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     vector3d.cpp \
-    model3d.cpp \
     vertex3d.cpp \
     objparser.cpp \
     vector2d.cpp \
@@ -38,11 +37,15 @@ SOURCES += \
     raytracer.cpp \
     color.cpp \
     light.cpp \
-    intersection.cpp
+    intersection.cpp \
+    wireframer.cpp \
+    shape.cpp \
+    scene.cpp \
+    model.cpp \
+    renderer.cpp
 
 HEADERS += \
     vector3d.h \
-    model3d.h \
     vertex3d.h \
     objparser.h \
     vector2d.h \
@@ -53,7 +56,12 @@ HEADERS += \
     raytracer.h \
     color.h \
     light.h \
-    intersection.h
+    intersection.h \
+    wireframer.h \
+    shape.h \
+    scene.h \
+    model.h \
+    renderer.h
 
 FORMS += \
         mainwindow.ui

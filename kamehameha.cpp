@@ -1,9 +1,4 @@
 #include "kamehameha.h"
-#include "ui_mainwindow.h"
-#include "raytracer.h"
-
-#include <QFile>
-#include <QTextStream>
 
 Kamehameha::Kamehameha(QWidget *parent) :
     QMainWindow(parent),
@@ -23,15 +18,16 @@ Kamehameha::Kamehameha(QWidget *parent) :
 
     //Initialize graphic elements
     graphicsScene = new QGraphicsScene(this);
-    graphicsScene->setSceneRect (0, 0, width, width);
+    graphicsScene->setSceneRect (0, 0, 300, 300);
     graphicsView = ui->graphicsView;
-
 }
 
 void Kamehameha::on_renderButton_clicked()
 {
+    Scene scene = Scene();
     // TODO get resolution from user input
-    RayTracer rt = RayTracer(width, height, Light(Vector3D(-2,-3,2)));
+    RayTracer rt = RayTracer(graphicsView->width (), graphicsView->height (), scene);
+    Wireframer wf = Wireframer(graphicsView->width (), graphicsView->height (), scene);
 
     // configure progress bar
     ui_renderProgressBar->setMinimum(0);
@@ -43,6 +39,11 @@ void Kamehameha::on_renderButton_clicked()
 //        rt.trace(out, ui_renderProgressBar, pixmap);
 
         QFutureSynchronizer<QImage> synchronizer;
+        for(Shape shape : rt.scene.model.shapes) {
+            if(shape.type == Shape::triangle) {
+                qDebug() << "LOL";
+            }
+        }
 
         for(int i = 0; i < rt.w; i+= rt.w/4) {
             for(int j = 0; j < rt.h; j += rt.h/4) {
