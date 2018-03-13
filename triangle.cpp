@@ -1,16 +1,19 @@
 #include "triangle.h"
 
 Triangle::Triangle(Vertex3D v1, Vertex3D v2, Vertex3D v3, QString material)
-    :   v1(v1), v2(v2), v3(v3), material(material)
+    :  Shape(material)
 {
     type = Shape::triangle;
+    vertices.push_back(v1);
+    vertices.push_back(v2);
+    vertices.push_back(v3);
 }
 
 bool Triangle::intersects(Ray ray, float &dist, Intersection &intersection) {
     float epsilon = 0.00001;
-    Vector3D vec0 = v1.position;
-    Vector3D vec1 = v2.position;
-    Vector3D vec2 = v3.position;
+    Vector3D vec0 = vertices[0].position;
+    Vector3D vec1 = vertices[1].position;
+    Vector3D vec2 = vertices[2].position;
 
     Vector3D edge1, edge2, tvec, pvec, qvec;
         float det,inv_det,u,v;
@@ -54,9 +57,9 @@ bool Triangle::intersects(Ray ray, float &dist, Intersection &intersection) {
 
 std::ostream & operator<<(std::ostream & Str, const Triangle& t) {
     //print something from v to str, e.g: Str << v.getX();
-    return Str << t.v1 << ", " << t.v2 << ", " << t.v3;
+    return Str << t.vertices[0] << ", " << t.vertices[1] << ", " << t.vertices[2];
 }
 
 QDebug operator<< (QDebug d, const Triangle &t) {
-    return d << "tri: " << t.v1 << ", " << t.v2 << ", " << t.v3 << ", mat: " << t.material;
+    return d << "tri: " << t.vertices[0] << ", " << t.vertices[1] << ", " << t.vertices[2] << ", mat: " << t.material;
 }

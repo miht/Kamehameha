@@ -40,29 +40,27 @@ void Kamehameha::on_renderButton_clicked()
 
         QFutureSynchronizer<QImage> synchronizer;
 
-        for(int i = 0; i < rt.w; i+= rt.w/4) {
-            for(int j = 0; j < rt.h; j += rt.h/4) {
-                        synchronizer.addFuture (QtConcurrent::run(rt, &RayTracer::generate,
-                                                                 ui_renderProgressBar,
-                                                                 i, j, rt.w/4, rt.h/4));
-            }
-        }
-//        synchronizer.addFuture (QtConcurrent::run(rt, &RayTracer::trace,
-//                                                 ui_renderProgressBar,
-//                                                 0, 0, rt.w/2, rt.h/2));
-//        synchronizer.addFuture (QtConcurrent::run(rt, &RayTracer::trace,
-//                                                 ui_renderProgressBar,
-//                                                 rt.w/2, 0, rt.w/2, rt.h/2));
+        //TEST GENERATE RAYTRACED IMAGE
 
-        synchronizer.waitForFinished ();
-        for(QImage img : synchronizer.futures ()) {
-            QGraphicsPixmapItem* item = graphicsScene->addPixmap(QPixmap::fromImage (img));
-            item->setPos(img.offset ());
-        }
-//        future.waitForFinished ();
+//        for(int i = 0; i < rt.w; i+= rt.w/4) {
+//            for(int j = 0; j < rt.h; j += rt.h/4) {
+//                        synchronizer.addFuture (QtConcurrent::run(rt, &RayTracer::generate,
+//                                                                 ui_renderProgressBar,
+//                                                                 i, j, rt.w/4, rt.h/4));
+//            }
+//        }
 
-//        graphicsScene->addPixmap (QPixmap::fromImage (img));
+//        synchronizer.waitForFinished ();
+//        for(QImage img : synchronizer.futures ()) {
+//            QGraphicsPixmapItem* item = graphicsScene->addPixmap(QPixmap::fromImage (img));
+//            item->setPos(img.offset ());
+//        }
+
+        //TEST GENERATE WIREFRAME IMAGE
+        graphicsScene->addPixmap (QPixmap::fromImage(wf.generate (ui_renderProgressBar, 0, 0, rt.w, rt.h)));
+
         graphicsView->setScene(graphicsScene);
+
     }
     file.close();
 }

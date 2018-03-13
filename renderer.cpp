@@ -22,6 +22,14 @@ Scene Renderer::getScene() const
     return scene;
 }
 
+QImage Renderer::generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) {
+    return QImage(width,height, QImage::Format_RGB32);
+}
+
+QPointF convertToQPointF(Vector3D point) {
+    return QPointF(point.x, point.y);
+}
+
 Vector3D Renderer::screenToWorldCoordinates(const Vector3D vec) {
     float x = (vec.x - ((float) w) / 2)/w;
     float y = (vec.y - ((float) h) / 2)/h;

@@ -11,18 +11,27 @@ Wireframer::Wireframer(int w, int h, Scene &scene)
 
 }
 
-QImage Wireframer::generate(int width, int height) {
+QImage Wireframer::generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) {
     // Plain PPM format
     //out << "P3\n" << w << ' ' << h << ' ' << "255\n";
     QImage img = QImage(width, height, QImage::Format_RGB32);
+    QPainter painter (&img);
+    painter.fillRect (0,0,width,height, Qt::white);
+    painter.setPen (Qt::black);
 
     // Iterate over all pixels in image
-    for (int x = 0; x < width; x++) {
-        for (int y = 0; y < height; y++) {
+    for(Shape* shape : scene.model.shapes) {
+        QPointF* qPoints = new QPointF[shape->getPoints ().size ()];
+        for(size_t i = 0; i < shape->getPoints ().size (); i++) {
+            Vector3D screenCoords = worldToScreenCoordinates (shape->getPoints ()[i]);
+            qPoints[i] =  QPointF(screenCoords.x, screenCoords.y);
+        }
 
-
-            //progress->setValue(progress->value() + 1); //update progress bar
+        if(shape->type == Shape::triangle) {
+            //remember to convert QPoints to screen coordinates!
+            painter.drawPolygon (qPoints, 3, Qt::OddEvenFill);
         }
     }
+    painter.end ();
     return img;
 }

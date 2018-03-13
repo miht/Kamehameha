@@ -11,7 +11,7 @@ class Wireframer : public Renderer
 public:
     Wireframer(Scene &scene);
     Wireframer(int w, int h, Scene &scene);
-    QImage generate(int width, int height); //the total wisth and height of the image. no parallel computations here
+    QImage generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) override;
 };
 
 #endif // WIREFRAMER_H

@@ -14,9 +14,6 @@
 class Triangle : public Shape
 {
 public:
-    Vertex3D v1, v2, v3;
-    QString material;
-
     Triangle(Vertex3D v1, Vertex3D v2, Vertex3D v3, QString material);
     bool intersects(Ray ray, float &dist, Intersection &intersection) override;
 
