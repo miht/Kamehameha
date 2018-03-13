@@ -62,7 +62,7 @@ Model ObjParser::parse(QString path)
             Vertex3D v2 = Vertex3D(Vector3D(temp_vertices[vertexIndex[1] - 1]), Vector3D(temp_normals[normalIndex[1] - 1]));
             Vertex3D v3 = Vertex3D(Vector3D(temp_vertices[vertexIndex[2] - 1]), Vector3D(temp_normals[normalIndex[2] - 1]));
 
-            model.shapes.push_back(Triangle(v1, v2, v3, current_material));
+            model.shapes.push_back(new Triangle(v1, v2, v3, current_material));
 //            qDebug() << current_material;
 
             //TODO implement UV mappings

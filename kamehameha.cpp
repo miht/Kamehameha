@@ -39,11 +39,6 @@ void Kamehameha::on_renderButton_clicked()
 //        rt.trace(out, ui_renderProgressBar, pixmap);
 
         QFutureSynchronizer<QImage> synchronizer;
-        for(Shape shape : rt.scene.model.shapes) {
-            if(shape.type == Shape::triangle) {
-                qDebug() << "LOL";
-            }
-        }
 
         for(int i = 0; i < rt.w; i+= rt.w/4) {
             for(int j = 0; j < rt.h; j += rt.h/4) {

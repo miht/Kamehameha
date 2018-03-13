@@ -9,7 +9,7 @@
 class Model
 {
 public:
-    std::vector<Shape> shapes;
+    std::vector<Shape*> shapes;
     bool smooth = false;
     QMap<QString, Material> materials;
 

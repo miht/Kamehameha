@@ -48,8 +48,8 @@ Color RayTracer::trace(Ray ray, int depth) {
             Ray ray_towards_light = Ray(hitPoint, light.position - hitPoint);
             float dist2 = 20000;
             Intersection intersect2;
-            for(Shape shape_shadow : scene.model.shapes) {
-                if(shape_shadow.intersects (ray_towards_light,
+            for(Shape* shape_shadow : scene.model.shapes) {
+                if(shape_shadow->intersects (ray_towards_light,
                                           dist2, intersect2)) { // check dist2, if 0 then it collids with its own collision point
                     Material m2 = scene.model.materials.value (intersect2.material);
                     //ret = Color(255*m2.diffuse.x, 255*m2.diffuse.y, 255*m2.diffuse.z);
@@ -69,10 +69,11 @@ Intersection RayTracer::findIntersection (Ray ray) {
     Intersection final_intersection;
     float shortest = 20000;
 
-    for(Shape shape : scene.model.shapes) {
+    for(Shape* shape : scene.model.shapes) {
+
         float dist = 20000;
         Intersection intersect1;
-        if(shape.intersects (ray, dist, intersect1)) {
+        if(shape->intersects (ray, dist, intersect1)) {
             if(dist < shortest) {
                 final_intersection = intersect1;
                 shortest = dist;

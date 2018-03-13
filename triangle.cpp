@@ -8,12 +8,9 @@ Triangle::Triangle(Vertex3D v1, Vertex3D v2, Vertex3D v3, QString material)
 
 bool Triangle::intersects(Ray ray, float &dist, Intersection &intersection) {
     float epsilon = 0.00001;
-
-        Vector3D vec0 = v1.position;
-        Vector3D vec1 = v2.position;
-        Vector3D vec2 = v3.position;
-
-        //qDebug() << "check 1";
+    Vector3D vec0 = v1.position;
+    Vector3D vec1 = v2.position;
+    Vector3D vec2 = v3.position;
 
     Vector3D edge1, edge2, tvec, pvec, qvec;
         float det,inv_det,u,v;
