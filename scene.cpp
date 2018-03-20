@@ -1,6 +1,9 @@
 #include "scene.h"
 
-Scene::Scene()
+Scene::Scene(float ambient_intensity, Color ambient_color)
+    :   ambient_intensity(ambient_intensity), ambient_color(ambient_color)
 {
-    model = ObjParser::parse("/Users/leifthysellsundqvist/Library/Mobile Documents/com~apple~CloudDocs/Skolan/Y4/VisGraf18/ProjectTest/skull");
+    QString path = "/Users/leifthysellsundqvist/Library/Mobile Documents/com~apple~CloudDocs/Skolan/Y4/VisGraf18/ProjectTest/";
+    QString file = "well_raytracer";
+    model = ObjParser::parse(path + file);
 }

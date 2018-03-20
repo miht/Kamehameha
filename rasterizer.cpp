@@ -1,17 +1,16 @@
-#include "wireframer.h"
+#include "rasterizer.h"
 
-Wireframer::Wireframer(Scene *scene)
+Rasterizer::Rasterizer(Scene *scene)
     :   Renderer(scene)
 {
 }
 
-Wireframer::Wireframer(int w, int h, Scene *scene)
+Rasterizer::Rasterizer(int w, int h, Scene *scene)
     :   Renderer(w, h, scene)
 {
-
 }
 
-QImage Wireframer::generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) {
+QImage Rasterizer::generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) {
     // Plain PPM format
     //out << "P3\n" << w << ' ' << h << ' ' << "255\n";
     QImage img = QImage(width, height, QImage::Format_RGB32);
@@ -19,7 +18,7 @@ QImage Wireframer::generate(QProgressBar *progress, int xOffset, int yOffset, in
     painter.fillRect (0,0,width,height, Qt::white);
     painter.setPen (Qt::black);
 
-    // Iterate over all pixels in image
+    // Iterate over all pixels in image, paint them
     for(Object object : scene->model.objects) {
         for(Face* face : object.faces) {
             QPointF* qPoints = new QPointF[face->getPoints ().size ()];

@@ -3,15 +3,14 @@
 #include <QMap>
 #include <vector>
 
-#include "triangle.h"
 #include "material.h"
+#include "object.h"
 
 class Model
 {
 public:
-    std::vector<Shape*> shapes;
-    bool smooth = false;
     QMap<QString, Material> materials;
+    std::vector<Object> objects;
 
     Model();
 };

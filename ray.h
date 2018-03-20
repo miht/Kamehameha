@@ -6,7 +6,7 @@
 class Ray
 {
 public:
-    Vector3D origin, direction;
+    Vector3D sign, origin, direction;
     Ray(Vector3D origin, Vector3D direction);
     Vector3D pointOnRay(float dist);
 };

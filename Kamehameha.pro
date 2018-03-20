@@ -39,10 +39,13 @@ SOURCES += \
     light.cpp \
     intersection.cpp \
     wireframer.cpp \
-    shape.cpp \
     scene.cpp \
     model.cpp \
-    renderer.cpp
+    renderer.cpp \
+    face.cpp \
+    rasterizer.cpp \
+    object.cpp \
+    boundingbox.cpp
 
 HEADERS += \
     vector3d.h \
@@ -58,10 +61,13 @@ HEADERS += \
     light.h \
     intersection.h \
     wireframer.h \
-    shape.h \
     scene.h \
     model.h \
-    renderer.h
+    renderer.h \
+    face.h \
+    rasterizer.h \
+    object.h \
+    boundingbox.h
 
 FORMS += \
         mainwindow.ui

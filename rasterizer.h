@@ -1,17 +1,17 @@
-#ifndef WIREFRAMER_H
-#define WIREFRAMER_H
+#ifndef RASTERIZER_H
+#define RASTERIZER_H
 
 #include <QImage>
 
 #include "renderer.h"
 #include "vector3d.h"
 
-class Wireframer : public Renderer
+class Rasterizer : public Renderer
 {
 public:
-    Wireframer(Scene *scene);
-    Wireframer(int w, int h, Scene *scene);
+    Rasterizer(Scene *scene);
+    Rasterizer(int w, int h, Scene *scene);
     QImage generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) override;
 };
 
-#endif // WIREFRAMER_H
+#endif // RASTERIZER_H

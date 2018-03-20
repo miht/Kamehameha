@@ -1,13 +1,15 @@
 #include "raytracer.h"
+#include "math.h"
 
+#include <QThread>
 #include <QProgressBar>
 
-RayTracer::RayTracer(Scene &scene)
+RayTracer::RayTracer(Scene *scene)
     :   Renderer(scene)
 {
 }
 
-RayTracer::RayTracer(int w, int h, Scene &scene)
+RayTracer::RayTracer(int w, int h, Scene *scene)
     :   Renderer(w, h, scene)
 {
 }
@@ -24,7 +26,6 @@ QImage RayTracer::generate(QProgressBar *progress, int xOffset, int yOffset, int
         for (int y = 0; y < height; y++) {
             Vector3D worldPos = screenToWorldCoordinates (Vector3D(x + xOffset, y + yOffset, 0));
             Ray ray(worldPos, Vector3D(0, 0, 1));
-
             Color color = trace(ray, 0);
 
             img.setPixelColor(x, y, color.asQColor ());
@@ -35,52 +36,69 @@ QImage RayTracer::generate(QProgressBar *progress, int xOffset, int yOffset, int
 }
 
 Color RayTracer::trace(Ray ray, int depth) {
-    Color ret = Color(0,0,0);
-    Intersection intersection = findIntersection (ray);
+    Vector3D col_tot = Vector3D(0,0,0);
+    float t0_0 = 0;
+    float t1_0 = 20000;
+    Intersection intersection = findIntersection (ray, t0_0, t1_0);
 
     if(intersection.didHit()) {
-        Material m = scene.model.materials.value(intersection.material);
-        ret = Color(255*m.diffuse.x, 255*m.diffuse.y, 255*m.diffuse.z);
+        //material of intersected face
+        Material m = scene->model.materials.value(intersection.material);
+        Vector3D c = 255 * scene->ambient_intensity * m.ambient;
 
         //SECOND TRACE, TBD TBD, FOR EACH LIGHT AND SO ON
-        for(Light light : scene.lights) {
-            Vector3D hitPoint = intersection.point + 0.00001*intersection.normal;
-            Ray ray_towards_light = Ray(hitPoint, light.position - hitPoint);
-            float dist2 = 20000;
-            Intersection intersect2;
-            for(Shape* shape_shadow : scene.model.shapes) {
-                if(shape_shadow->intersects (ray_towards_light,
-                                          dist2, intersect2)) { // check dist2, if 0 then it collids with its own collision point
-                    Material m2 = scene.model.materials.value (intersect2.material);
-                    //ret = Color(255*m2.diffuse.x, 255*m2.diffuse.y, 255*m2.diffuse.z);
-                    ret.r *= 0.5;
-                    ret.g *= 0.5;
-                    ret.b *= 0.5;
-                    break;
-                }
+        for(Light light : scene->lights) {
+            Ray ray_towards_light = Ray(intersection.point, light.position - intersection.point);
+            float t0_1 = 0.001;
+            float t1_1 = 20000;
+            Intersection intersection2 = findIntersection (ray_towards_light, t0_1, t1_1);
+
+            if(!intersection2.didHit()) {
+                float diffuse, specular;
+
+                //phong
+                //diffuse
+                diffuse = Vector3D::dot_prod (ray_towards_light.direction.normalized (), intersection.normal);
+                diffuse = fmax(0, diffuse);
+                Vector3D diff_tot =  diffuse * m.diffuse;
+                //diff_tot = (1.0/(t1_1*t1_1)) * diff_tot; //ATTENUATION FOR POINT LIGHT DISTANCE
+
+//                //specular
+                Vector3D bisector = (-1*ray.direction.normalized ()+ ray_towards_light.direction.normalized ()).normalized();
+                specular = Vector3D::dot_prod (bisector, intersection.normal);
+                specular = std::powf(fmax(0, specular), m.spec_exp);
+                Vector3D spec_tot =  specular * m.specular;
+
+                c = c + 255*light.intensity* diff_tot + 255* light.intensity * spec_tot;
             }
         }
-
+        return Color(c);
     }
-    return ret;
+    else {
+        return scene->ambient_color;
+    }
 }
 
-Intersection RayTracer::findIntersection (Ray ray) {
+Intersection RayTracer::findIntersection (Ray ray, float &t0, float &t1) {
     Intersection final_intersection;
     float shortest = 20000;
 
-    for(Shape* shape : scene.model.shapes) {
-
-        float dist = 20000;
-        Intersection intersect1;
-        if(shape->intersects (ray, dist, intersect1)) {
-            if(dist < shortest) {
-                final_intersection = intersect1;
-                shortest = dist;
+    for(Object object : scene->model.objects) {
+        if(object.bbox.intersects (ray, t0, t1)) { // REPLACE WITH IF OBJECT.BOUNDING BOX INTERSECTS SOME RAY!!!!!
+            for(Face* face : object.faces) {
+                float t1_n = 20000;
+                Intersection intersection;
+                if(face->intersects (ray, t0, t1_n, intersection, true)) {
+                    if(t1_n < shortest) {
+                        final_intersection = intersection;
+                        shortest = t1_n;
+                    }
+                }
             }
         }
     }
 
+    t1 = shortest;
     return final_intersection;
 }
 

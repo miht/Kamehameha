@@ -5,17 +5,17 @@
 #include <QString>
 #include <iostream>
 
-#include "shape.h"
+#include "face.h"
 #include "vertex3d.h"
 #include "ray.h"
 #include "material.h"
 #include "intersection.h"
 
-class Triangle : public Shape
+class Triangle : public Face
 {
 public:
     Triangle(Vertex3D v1, Vertex3D v2, Vertex3D v3, QString material);
-    bool intersects(Ray ray, float &dist, Intersection &intersection) override;
+    bool intersects(Ray ray, float &t0, float &t1, Intersection &intersection, bool smooth) override;
 
     friend std::ostream & operator<<(std::ostream & Str, const Triangle& t);
     friend QDebug operator<< (QDebug d, const Triangle &t);

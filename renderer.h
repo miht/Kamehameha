@@ -13,14 +13,13 @@ class Renderer
 {
 public:
     int w, h;
-    Scene scene;
+    Scene *scene;
 
-    Renderer(Scene &scene);
-    Renderer(int width, int height, Scene &scene);
+    Renderer(Scene *scene);
+    Renderer(int width, int height, Scene *scene);
     virtual QImage generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height);
 
-    void setScene(Scene &scene);
-    Scene getScene() const;
+    void setScene(Scene *scene);
 
 protected:
     const int DEFAULT_WIDTH = 640;

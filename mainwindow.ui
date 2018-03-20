@@ -41,21 +41,32 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>300</width>
-            <height>300</height>
+            <width>256</width>
+            <height>256</height>
            </size>
           </property>
           <property name="verticalScrollBarPolicy">
-           <enum>Qt::ScrollBarAlwaysOff</enum>
+           <enum>Qt::ScrollBarAsNeeded</enum>
           </property>
           <property name="horizontalScrollBarPolicy">
-           <enum>Qt::ScrollBarAlwaysOff</enum>
+           <enum>Qt::ScrollBarAsNeeded</enum>
           </property>
           <property name="sizeAdjustPolicy">
            <enum>QAbstractScrollArea::AdjustToContents</enum>
           </property>
           <property name="interactive">
            <bool>true</bool>
+          </property>
+          <property name="sceneRect">
+           <rectf>
+            <x>0.000000000000000</x>
+            <y>0.000000000000000</y>
+            <width>0.000000000000000</width>
+            <height>0.000000000000000</height>
+           </rectf>
+          </property>
+          <property name="transformationAnchor">
+           <enum>QGraphicsView::AnchorViewCenter</enum>
           </property>
          </widget>
         </item>

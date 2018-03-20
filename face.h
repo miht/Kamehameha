@@ -1,5 +1,5 @@
-#ifndef SHAPE_H
-#define SHAPE_H
+#ifndef FACE_H
+#define FACE_H
 
 #include <QString>
 #include <vector>
@@ -8,14 +8,15 @@
 #include "vertex3d.h"
 #include "intersection.h"
 
-class Shape
+class Face
 {
 public:
     enum Geometry {triangle, quadrilateral, sphere, polygon};
     Geometry type;
-    Shape(QString material);
+    Face(QString material);
 
-    virtual bool intersects(Ray ray, float &dist, Intersection &intersection);
+    virtual bool intersects(Ray ray, float &t0, float &t1, Intersection &intersection, bool smooth);
+    virtual std::vector<Vertex3D> getVertices() const;
     virtual std::vector<Vector3D> getPoints() const;
 
 protected:
@@ -23,4 +24,4 @@ protected:
     QString material;
 };
 
-#endif // SHAPE_H
+#endif // FACE_H

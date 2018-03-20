@@ -1,25 +1,19 @@
 #include "renderer.h"
 
-Renderer::Renderer(Scene &scene)
+Renderer::Renderer(Scene *scene)
     :   scene(scene)
 {
     w = DEFAULT_WIDTH;
     h = DEFAULT_HEIGHT;
 }
 
-Renderer::Renderer(int width, int height, Scene &scene)
+Renderer::Renderer(int width, int height, Scene *scene)
     :   w(width), h(height), scene(scene)
 {
-
 }
 
-void Renderer::setScene(Scene &scene) {
+void Renderer::setScene(Scene *scene) {
     this->scene = scene;
-}
-
-Scene Renderer::getScene() const
-{
-    return scene;
 }
 
 QImage Renderer::generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) {

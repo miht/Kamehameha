@@ -31,21 +31,45 @@ Model ObjParser::parse(QString path)
         QString line = file.readLine().trimmed();
         QStringList sl = line.split(" ");
 
-        if (sl.value(0) == "v"){
+        if (sl.value(0) == "o") { //new object
+            model.objects.push_back (Object(sl.value(1)));
+        }
+        else if (sl.value(0) == "v") { //vertex
             Vector3D vertex = Vector3D(sl.value(1).toFloat(),
                             -sl.value(2).toFloat(), //negative y value to turn things upside down
                              -sl.value(3).toFloat()); //negative z value to compensate for export y-direction in blender
+
+            //Set the bounding box of the object
+            //This code is too large, must clean up
+            if(vertex.x < model.objects.back ().bbox.min.x) {
+                model.objects.back ().bbox.min.x = vertex.x;
+            }
+            if(vertex.x > model.objects.back().bbox.max.x) {
+                model.objects.back ().bbox.max.x = vertex.x;
+            }
+            if(vertex.y < model.objects.back ().bbox.min.y) {
+                model.objects.back ().bbox.min.y = vertex.y;
+            }
+            if(vertex.y > model.objects.back().bbox.max.y) {
+                model.objects.back ().bbox.max.y = vertex.y;
+            }
+            if(vertex.z < model.objects.back ().bbox.min.z) {
+                model.objects.back ().bbox.min.z = vertex.z;
+            }
+            if(vertex.z > model.objects.back().bbox.max.z) {
+                model.objects.back ().bbox.max.z = vertex.z;
+            }
             temp_vertices.push_back(vertex);
         } else if (sl.value(0) == "vt") {
             Vector2D uv = Vector2D(sl.value(1).toFloat(), sl.value(2).toFloat());
             temp_uvs.push_back(uv);
         } else if (sl.value(0) == "vn") {
-            Vector3D normal = Vector3D(sl.value(1).toFloat() ,sl.value(2).toFloat(), sl.value(3).toFloat());
+            Vector3D normal = Vector3D(sl.value(1).toFloat() ,
+                                       -sl.value(2).toFloat(), -sl.value(3).toFloat()); //same here, negative
             temp_normals.push_back(normal);
         } else if (sl.value(0) == "usemtl"){
             current_material = sl.value(1);
         } else if (sl.value(0) == "f") {
-            std::string vertex1, vertex2, vertex3;
             unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
             for(int i = 0; i < 3; i++) {
                 QStringList vertex_line = sl.value(1 + i).split("/");
@@ -54,15 +78,11 @@ Model ObjParser::parse(QString path)
                 normalIndex[i] = vertex_line.value(2).toInt();
             }
 
-            vertexIndices.push_back(vertexIndex[0]);
-            vertexIndices.push_back(vertexIndex[1]);
-            vertexIndices.push_back(vertexIndex[2]);
-
             Vertex3D v1 = Vertex3D(Vector3D(temp_vertices[vertexIndex[0] - 1]), Vector3D(temp_normals[normalIndex[0] - 1]));
             Vertex3D v2 = Vertex3D(Vector3D(temp_vertices[vertexIndex[1] - 1]), Vector3D(temp_normals[normalIndex[1] - 1]));
             Vertex3D v3 = Vertex3D(Vector3D(temp_vertices[vertexIndex[2] - 1]), Vector3D(temp_normals[normalIndex[2] - 1]));
 
-            model.shapes.push_back(new Triangle(v1, v2, v3, current_material));
+            model.objects.back ().faces.push_back(new Triangle(v1, v2, v3, current_material));
 //            qDebug() << current_material;
 
             //TODO implement UV mappings
@@ -71,11 +91,10 @@ Model ObjParser::parse(QString path)
             //          uvIndices.push_back(uvIndex[1]);
             //          uvIndices.push_back(uvIndex[2]);
 
-            //          normalIndices.push_back(normalIndex[0]);
-            //          normalIndices.push_back(normalIndex[1]);
-            //          normalIndices.push_back(normalIndex[2]);
+
         } else if(sl.value(0) == "s") {
-            model.smooth = sl.value(1) != "off";
+            model.objects.back ().smooth = sl.value(1) != "off";
+//            isCurrentSmooth = sl.value(1) != "off";
         }
     }
     file.close ();

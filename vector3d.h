@@ -16,6 +16,7 @@ public:
 
     static float dot_prod(Vector3D a, Vector3D b);
     static Vector3D cross_prod(Vector3D a, Vector3D b);
+    static Vector3D interpolate(Vector3D a, Vector3D b);
 
     friend Vector3D operator+(const Vector3D & v1, const Vector3D v2);
     friend Vector3D operator-(const Vector3D & v1, const Vector3D v2);

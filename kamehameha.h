@@ -7,15 +7,20 @@
 #include <QTextBrowser>
 #include <QProgressBar>
 #include <QPixmap>
+#include <QImage>
 #include <QGraphicsPixmapItem>
 #include <QFile>
 #include <QTextStream>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QList>
+
+#include <QFutureWatcher>
 
 #include "ui_mainwindow.h"
 #include "raytracer.h"
 #include "wireframer.h"
+#include "scene.h"
 
 namespace Ui {
 class MainWindow;
@@ -27,6 +32,8 @@ class Kamehameha : public QMainWindow
 
 public:
     int width, height;
+    QFutureWatcher<QImage> *watcher;
+    Scene *scene;
     explicit Kamehameha(QWidget *parent = 0);
 
     ~Kamehameha();
@@ -34,6 +41,7 @@ public:
 private slots:
     void on_renderButton_clicked();
     void on_cancelButton_clicked();
+    void processImage(int index);
 
 private:
     Ui::MainWindow *ui;

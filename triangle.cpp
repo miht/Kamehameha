@@ -1,15 +1,15 @@
 #include "triangle.h"
 
 Triangle::Triangle(Vertex3D v1, Vertex3D v2, Vertex3D v3, QString material)
-    :  Shape(material)
+    :  Face(material)
 {
-    type = Shape::triangle;
+    type = Face::triangle;
     vertices.push_back(v1);
     vertices.push_back(v2);
     vertices.push_back(v3);
 }
 
-bool Triangle::intersects(Ray ray, float &dist, Intersection &intersection) {
+bool Triangle::intersects(Ray ray, float &t0, float &t1, Intersection &intersection, bool smooth) {
     float epsilon = 0.00001;
     Vector3D vec0 = vertices[0].position;
     Vector3D vec1 = vertices[1].position;
@@ -21,12 +21,12 @@ bool Triangle::intersects(Ray ray, float &dist, Intersection &intersection) {
         edge2 = vec2 - vec0;
 
         Vector3D normal = Vector3D::cross_prod (edge1, edge2).normalized();
-        pvec = Vector3D::cross_prod(ray.direction, edge2);
+
+        pvec = Vector3D::cross_prod(ray.direction, edge2); //vec 0
 
         det = Vector3D::dot_prod (edge1, pvec); //det
         if (det < epsilon)
             return false;
-        //qDebug() << "check 2";
 
         if (fabs(det) < epsilon) return false;
         inv_det = 1/det; //inv det
@@ -35,19 +35,20 @@ bool Triangle::intersects(Ray ray, float &dist, Intersection &intersection) {
         u = inv_det * Vector3D::dot_prod (tvec, pvec);
         if (u < 0.0 || u > 1.0) return false;
 
-        //qDebug() << "check 3";
-
         qvec = Vector3D::cross_prod (tvec, edge1); //qvec
         v = inv_det * Vector3D::dot_prod (ray.direction, qvec);
         if (v < 0.0 || u + v > 1.0) return false;
 
-        //qDebug() << "check 4";
+        t1 = inv_det * Vector3D::dot_prod (edge2, qvec);
+        if(t1 <= t0) return false; //distance negative => object is behind ray
 
-        float t = inv_det * Vector3D::dot_prod (edge2, qvec);
-        if(t <= 0) return false; //distance negative => object is behind ray
+        if(smooth) {
+            normal = u * vertices[1].normal.normalized ()+ v*vertices[2].normal.normalized ()+ (1 - u - v)*vertices[0].normal.normalized ();
+            normal = normal.normalized ();
+//            qDebug() << "normal interpolated: " << normal;
+        }
 
-        dist = t;
-        intersection = Intersection(ray.pointOnRay (dist), normal, material);
+        intersection = Intersection(ray.pointOnRay (t1), normal, material);
         intersection.hit = true;
 
         //intersection = RayIntersection(ray,shared_from_this(), t, normal,Vector3D(0,0,0));

@@ -7,7 +7,7 @@ class Material
 {
 public:
     Vector3D ambient, diffuse, specular;
-    double spec_exp = 0.0;
+    float spec_exp = 0.0;
 
     Material();
     friend QDebug operator<< (QDebug d, const Material &m);

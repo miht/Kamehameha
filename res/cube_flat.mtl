@@ -1,7 +1,7 @@
-# Blender MTL File: 'skull.blend'
-# Material Count: 2
+# Blender MTL File: 'cube_flat.blend'
+# Material Count: 1
 
-newmtl Bone
+newmtl Material
 Ns 96.078431
 Ka 1.000000 1.000000 1.000000
 Kd 0.640000 0.640000 0.640000
@@ -9,12 +9,4 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
-
-newmtl None
-Ns 0
-Ka 0.000000 0.000000 0.000000
-Kd 0.8 0.8 0.8
-Ks 0.8 0.8 0.8
-d 1
 illum 2

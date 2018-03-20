@@ -21,13 +21,13 @@
 class RayTracer : public Renderer
 {
 public:
-    RayTracer(Scene &scene);
-    RayTracer(int w, int h, Scene &scene);
+    RayTracer(Scene *scene);
+    RayTracer(int w, int h, Scene *scene);
     QImage generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) override;
 
 private:
     Color trace(Ray ray, int depth);
-    Intersection findIntersection(Ray ray);
+    Intersection findIntersection(Ray ray, float &t0, float &t1);
 };
 
 #endif // RAYTRACER_H
