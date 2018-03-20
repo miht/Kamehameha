@@ -104,6 +104,7 @@ void Kamehameha::on_cancelButton_clicked()
 void Kamehameha::processImage(int index) {
     QImage img = watcher->resultAt(index);
     QGraphicsPixmapItem* item = graphicsScene->addPixmap(QPixmap::fromImage (img));
+    ui_renderProgressBar->setValue(ui_renderProgressBar->value() + img.width() * img.height());
     qDebug () << img.offset ();
     item->setPos(img.offset ());
 }
