@@ -44,54 +44,29 @@ void Kamehameha::on_renderButton_clicked()
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream out(&file);
 
-//        QFutureSynchronizer<QImage> synchronizer;
         watcher = new QFutureWatcher<QImage>();
 
-        QList<QImage> images;
+        QList<QImage> images; //the qtconcurrentmap will be applied to this list
 
-        for(int i = 0; i < width; i+= width/16) {
-            for(int j = 0; j < height; j += height/16) {
-                QImage img = QImage(width/16, height/16, QImage::Format_RGB32);
+        for(int i = 0; i < width; i+= width/numberOfSamples) {
+            for(int j = 0; j < height; j += height/numberOfSamples) {
+                QImage img = QImage(width/numberOfSamples, height/numberOfSamples, QImage::Format_RGB32);
                 img.setOffset(QPoint(i, j));
                 images << img;
             }
         }
 
-        //ATTEMPT MULTIPLE THREADS!!! ! !! ! (1)
-
-//        connect(watch, SIGNAL(resultReadyAt(int index)), this, SLOT(processImage(watch.resultAt(index))));
-//        watcher1->setFuture(synchronizer);
-
-//        watcher1->setFuture(QtConcurrent::run(rt, &RayTracer::generate,ui_renderProgressBar, 0, 0, rt.w, rt.h));
-
         std::function<QImage(const QImage&)> rendered = [this](const QImage &image) -> QImage
         {
             RayTracer rt = RayTracer(this->graphicsView->width (), this->graphicsView->height (), scene);
-            return rt.generate(this->ui_renderProgressBar, image.offset().x (), image.offset ().y (), image.width (), image.height ());
+            return rt.generate(this->ui_renderProgressBar, image);
         };
         connect(watcher, SIGNAL(resultReadyAt(int)), this, SLOT(processImage(int)));
         watcher->setFuture (QtConcurrent::mapped(images, rendered));
 
-        //TEST GENERATE RAYTRACED IMAGE (2)
-
-//        for(int i = 0; i < rt.w; i+= rt.w/4) {
-//            for(int j = 0; j < rt.h; j += rt.h/4) {
-//                        synchronizer.addFuture (QtConcurrent::run(rt, &RayTracer::generate,
-//                                                                 ui_renderProgressBar,
-//                                                                 i, j, rt.w/4, rt.h/4));
-//            }
-//        }
-
-//        synchronizer.waitForFinished ();
-//        for(QImage img : synchronizer.futures ()) {
-//            QGraphicsPixmapItem* item = graphicsScene->addPixmap(QPixmap::fromImage (img));
-//            item->setPos(img.offset ());
-//        }
-
 //        //TEST GENERATE WIREFRAME IMAGE (3)
 //        graphicsScene->addPixmap (QPixmap::fromImage(wf.generate (ui_renderProgressBar, 0, 0, rt.w, rt.h)));
         graphicsView->setScene(graphicsScene);
-
     }
 }
 
@@ -105,7 +80,6 @@ void Kamehameha::processImage(int index) {
     QImage img = watcher->resultAt(index);
     QGraphicsPixmapItem* item = graphicsScene->addPixmap(QPixmap::fromImage (img));
     ui_renderProgressBar->setValue(ui_renderProgressBar->value() + img.width() * img.height());
-    qDebug () << img.offset ();
     item->setPos(img.offset ());
 }
 

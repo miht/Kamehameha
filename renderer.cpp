@@ -16,8 +16,8 @@ void Renderer::setScene(Scene *scene) {
     this->scene = scene;
 }
 
-QImage Renderer::generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) {
-    return QImage(width,height, QImage::Format_RGB32);
+QImage Renderer::generate(QProgressBar *progress, QImage image) {
+    return image;
 }
 
 QPointF convertToQPointF(Vector3D point) {

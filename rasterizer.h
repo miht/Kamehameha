@@ -11,7 +11,7 @@ class Rasterizer : public Renderer
 public:
     Rasterizer(Scene *scene);
     Rasterizer(int w, int h, Scene *scene);
-    QImage generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) override;
+    QImage generate(QProgressBar *progress, QImage image) override;
 };
 
 #endif // RASTERIZER_H

@@ -17,7 +17,7 @@ public:
 
     Renderer(Scene *scene);
     Renderer(int width, int height, Scene *scene);
-    virtual QImage generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height);
+    virtual QImage generate(QProgressBar *progress, QImage image);
 
     void setScene(Scene *scene);
 

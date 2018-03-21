@@ -11,12 +11,11 @@ Wireframer::Wireframer(int w, int h, Scene *scene)
 
 }
 
-QImage Wireframer::generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) {
+QImage Wireframer::generate(QProgressBar *progress, QImage image) {
     // Plain PPM format
     //out << "P3\n" << w << ' ' << h << ' ' << "255\n";
-    QImage img = QImage(width, height, QImage::Format_RGB32);
-    QPainter painter (&img);
-    painter.fillRect (0,0,width,height, Qt::white);
+    QPainter painter (&image);
+    painter.fillRect (0,0,image.width (), image.height (), Qt::white);
     painter.setPen (Qt::black);
 
     // Iterate over all pixels in image
@@ -59,5 +58,5 @@ QImage Wireframer::generate(QProgressBar *progress, int xOffset, int yOffset, in
     }
 
     painter.end ();
-    return img;
+    return image;
 }

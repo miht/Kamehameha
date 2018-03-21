@@ -32,6 +32,7 @@ class Kamehameha : public QMainWindow
 
 public:
     int width, height;
+    int numberOfSamples = 16;
     QFutureWatcher<QImage> *watcher;
     Scene *scene;
     explicit Kamehameha(QWidget *parent = 0);

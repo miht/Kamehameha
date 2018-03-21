@@ -14,25 +14,22 @@ RayTracer::RayTracer(int w, int h, Scene *scene)
 {
 }
 
-QImage RayTracer::generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height)
+QImage RayTracer::generate(QProgressBar *progress, QImage image)
 {
     // Plain PPM format
     //out << "P3\n" << w << ' ' << h << ' ' << "255\n";
-    QImage img = QImage(width, height, QImage::Format_RGB32);
-    img.setOffset (QPoint(xOffset, yOffset));
-
     // Iterate over all pixels in image
-    for (int x = 0; x < width; x++) {
-        for (int y = 0; y < height; y++) {
-            Vector3D worldPos = screenToWorldCoordinates (Vector3D(x + xOffset, y + yOffset, 0));
+    for (int x = 0; x < image.width (); x++) {
+        for (int y = 0; y < image.height (); y++) {
+            Vector3D worldPos = screenToWorldCoordinates (Vector3D(x + image.offset ().x (), y + image.offset ().y (), 0));
             Ray ray(worldPos, Vector3D(0, 0, 1));
             Color color = trace(ray, 0);
 
-            img.setPixelColor(x, y, color.asQColor ());
+            image.setPixelColor(x, y, color.asQColor ());
             //progress->setValue(progress->value() + 1); //update progress bar
         }
     }
-    return img;
+    return image;
 }
 
 Color RayTracer::trace(Ray ray, int depth) {

@@ -23,7 +23,7 @@ class RayTracer : public Renderer
 public:
     RayTracer(Scene *scene);
     RayTracer(int w, int h, Scene *scene);
-    QImage generate(QProgressBar *progress, int xOffset, int yOffset, int width, int height) override;
+    QImage generate(QProgressBar *progress, QImage image) override;
 
 private:
     Color trace(Ray ray, int depth);
