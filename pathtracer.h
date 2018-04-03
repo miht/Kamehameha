@@ -1,5 +1,5 @@
-#ifndef RAYTRACER_H
-#define RAYTRACER_H
+#ifndef PATHTRACER_H
+#define PATHTRACER_H
 
 #include <QProgressBar>
 #include <QTextStream>
@@ -18,17 +18,23 @@
 #include "ray.h"
 #include "intersection.h"
 
-class RayTracer : public Renderer
+class PathTracer : public Renderer
 {
 public:
     int subdivisions = 4;
+    int samples = 16;
+    int depth = 2;
+    bool globalIllumination = false;
 
-    RayTracer(Scene *scene);
+    PathTracer(Scene *scene);
     QImage generate(QProgressBar *progress, QImage image) override;
 
 private:
     Color trace(Ray ray, int depth);
     Intersection findIntersection(Ray ray, float &t0, float &t1);
+    void createCoordinateSystem(const Vector3D &N, Vector3D &Nt, Vector3D &Nb);
+    Vector3D uniformSampleHemisphere(const float &r1, const float &r2);
+
 };
 
-#endif // RAYTRACER_H
+#endif // PATHTRACER_H

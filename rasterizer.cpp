@@ -3,11 +3,7 @@
 Rasterizer::Rasterizer(Scene *scene)
     :   Renderer(scene)
 {
-}
-
-Rasterizer::Rasterizer(int w, int h, Scene *scene)
-    :   Renderer(w, h, scene)
-{
+    mode = Renderer::Rasterizer;
 }
 
 QImage Rasterizer::generate(QProgressBar *progress, QImage image) {

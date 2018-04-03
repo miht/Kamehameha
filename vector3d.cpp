@@ -35,6 +35,10 @@ Vector3D Vector3D::cross_prod(Vector3D a, Vector3D b)
     return Vector3D(x, y, z);
 }
 
+Vector3D Vector3D::reflect(Vector3D vec, Vector3D normal) {
+    return vec - 2*Vector3D::dot_prod (vec, normal)*normal;
+}
+
 Vector3D Vector3D::interpolate(Vector3D a, Vector3D b) {
     return 0.5* a + 0.5 * b;
 }
@@ -49,6 +53,14 @@ Vector3D operator-(const Vector3D & v1, const Vector3D v2) {
 }
 Vector3D operator*(const float & s, const Vector3D v) {
     return Vector3D(s * v.x, s * v.y, s * v.z);
+}
+
+Vector3D operator/(const Vector3D v, const float &d) {
+    return Vector3D(v.x/d, v.y/d, v.z/d);
+}
+
+Vector3D operator*(const Vector3D & v1, const Vector3D v2) {
+    return Vector3D(v1.x * v2.x, v1.y *v2.y, v1.z * v2.z);
 }
 
 std::ostream & operator<<(std::ostream & Str, const Vector3D& v) {

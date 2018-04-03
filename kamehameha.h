@@ -14,11 +14,14 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QList>
+#include <QFileDialog>
+#include <QFileInfo>
 
 #include <QFutureWatcher>
 
 #include "ui_mainwindow.h"
 #include "raytracer.h"
+#include "pathtracer.h"
 #include "wireframer.h"
 #include "scene.h"
 
@@ -31,9 +34,8 @@ class Kamehameha : public QMainWindow
     Q_OBJECT
 
 public:
-    int width, height;
-    int numberOfSamples = 16;
-    QFutureWatcher<QImage> *watcher;
+    Renderer *renderer;
+    QFutureWatcher<QImage> *watcher; //for parallell tracing
     Scene *scene;
     explicit Kamehameha(QWidget *parent = 0);
 
@@ -43,6 +45,14 @@ private slots:
     void on_renderButton_clicked();
     void on_cancelButton_clicked();
     void processImage(int index);
+
+    void on_toolButton_clicked();
+
+    void on_radioButton_3_clicked();
+
+    void on_radioButton_clicked();
+
+    void on_radioButton_4_clicked();
 
 private:
     Ui::MainWindow *ui;

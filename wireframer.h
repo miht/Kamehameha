@@ -10,7 +10,6 @@ class Wireframer : public Renderer
 {
 public:
     Wireframer(Scene *scene);
-    Wireframer(int w, int h, Scene *scene);
     QImage generate(QProgressBar *progress, QImage image) override;
 };
 

@@ -1,5 +1,11 @@
 #include "ray.h"
 
+Ray::Ray()
+{
+    origin = Vector3D(0,0,0);
+    direction = Vector3D(0,1,0);
+}
+
 Ray::Ray(Vector3D origin, Vector3D direction)
     :   origin(origin), direction(direction)
 {

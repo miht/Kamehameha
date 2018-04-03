@@ -12,7 +12,7 @@
 class ObjParser
 {
 public:
-    static Model parse(QString path);
+    static Model parse(QString absPath, QString filePath);
 
 private:
     ObjParser();

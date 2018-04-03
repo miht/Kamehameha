@@ -12,11 +12,11 @@
 class Renderer
 {
 public:
-    int w, h;
+    enum Mode {Raytracer, Pathtracer, Rasterizer, Wireframer};
+    Mode mode;
     Scene *scene;
 
     Renderer(Scene *scene);
-    Renderer(int width, int height, Scene *scene);
     virtual QImage generate(QProgressBar *progress, QImage image);
 
     void setScene(Scene *scene);

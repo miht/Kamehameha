@@ -45,7 +45,11 @@ SOURCES += \
     face.cpp \
     rasterizer.cpp \
     object.cpp \
-    boundingbox.cpp
+    boundingbox.cpp \
+    illuminationmodel.cpp \
+    pathtracer.cpp \
+    camera.cpp \
+    mathops.cpp
 
 HEADERS += \
     vector3d.h \
@@ -67,7 +71,11 @@ HEADERS += \
     face.h \
     rasterizer.h \
     object.h \
-    boundingbox.h
+    boundingbox.h \
+    illuminationmodel.h \
+    pathtracer.h \
+    camera.h \
+    mathops.h
 
 FORMS += \
         mainwindow.ui

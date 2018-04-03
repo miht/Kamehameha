@@ -7,11 +7,7 @@
 RayTracer::RayTracer(Scene *scene)
     :   Renderer(scene)
 {
-}
-
-RayTracer::RayTracer(int w, int h, Scene *scene)
-    :   Renderer(w, h, scene)
-{
+    mode = Renderer::Raytracer;
 }
 
 QImage RayTracer::generate(QProgressBar *progress, QImage image)
@@ -21,9 +17,17 @@ QImage RayTracer::generate(QProgressBar *progress, QImage image)
     // Iterate over all pixels in image
     for (int x = 0; x < image.width (); x++) {
         for (int y = 0; y < image.height (); y++) {
-            Vector3D worldPos = screenToWorldCoordinates (Vector3D(x + image.offset ().x (), y + image.offset ().y (), 0));
-            Ray ray(worldPos, Vector3D(0, 0, 1));
-            Color color = trace(ray, 0);
+            Ray ray;
+            if(scene->camera.mode == Camera::ortographic) {
+                Vector3D worldPos = screenToWorldCoordinates (Vector3D(x + image.offset ().x (), y + image.offset ().y (), 0));
+                ray = Ray(worldPos, Vector3D(0, 0, 1));
+            }
+            else if(scene->camera.mode == Camera::perspective) {
+                Vector3D worldPos = screenToWorldCoordinates (Vector3D(x + image.offset ().x (), y + image.offset ().y (), scene->camera.position.z + scene->camera.depth));
+                ray = Ray(scene->camera.position, worldPos - scene->camera.position);
+            }
+
+            Color color = trace(ray, 1);
 
             image.setPixelColor(x, y, color.asQColor ());
             //progress->setValue(progress->value() + 1); //update progress bar
@@ -34,7 +38,7 @@ QImage RayTracer::generate(QProgressBar *progress, QImage image)
 
 Color RayTracer::trace(Ray ray, int depth) {
     Vector3D col_tot = Vector3D(0,0,0);
-    float t0_0 = 0;
+    float t0_0 = 0.001;
     float t1_0 = 20000;
     Intersection intersection = findIntersection (ray, t0_0, t1_0);
 
@@ -58,7 +62,6 @@ Color RayTracer::trace(Ray ray, int depth) {
                 diffuse = Vector3D::dot_prod (ray_towards_light.direction.normalized (), intersection.normal);
                 diffuse = fmax(0, diffuse);
                 Vector3D diff_tot =  diffuse * m.diffuse;
-                //diff_tot = (1.0/(t1_1*t1_1)) * diff_tot; //ATTENUATION FOR POINT LIGHT DISTANCE
 
 //                //specular
                 Vector3D bisector = (-1*ray.direction.normalized ()+ ray_towards_light.direction.normalized ()).normalized();
@@ -67,6 +70,11 @@ Color RayTracer::trace(Ray ray, int depth) {
                 Vector3D spec_tot =  specular * m.specular;
 
                 c = c + 255*light.intensity* diff_tot + 255* light.intensity * spec_tot;
+            }
+        }
+        if(m.illModel.reflection) {
+            if(depth > 0) {
+                c = c + 0.2*trace(Ray(intersection.point, Vector3D::reflect (ray.direction, intersection.normal).normalized ()), depth - 1).asVector3D ();
             }
         }
         return Color(c);

@@ -1,4 +1,5 @@
 #include "color.h"
+#include "mathops.h"
 
 Color::Color()
 {
@@ -13,24 +14,9 @@ Color::Color(int r, int g, int b)
 
 Color::Color(Vector3D rgb_vector)
 {
-    if(rgb_vector.x > 255) {
-        r = 255;
-    }
-    else {
-        r = rgb_vector.x;
-    }
-    if(rgb_vector.y > 255) {
-        g = 255;
-    }
-    else {
-        g = rgb_vector.y;
-    }
-    if(rgb_vector.z > 255) {
-        b = 255;
-    }
-    else {
-        b = rgb_vector.z;
-    }
+    r = MathOps::clamp(rgb_vector.x, 0, 255);
+    g = MathOps::clamp(rgb_vector.y, 0, 255);
+    b = MathOps::clamp(rgb_vector.z, 0, 255);
 }
 
 QColor Color::asQColor() {

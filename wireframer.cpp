@@ -3,12 +3,7 @@
 Wireframer::Wireframer(Scene *scene)
     :   Renderer(scene)
 {
-}
-
-Wireframer::Wireframer(int w, int h, Scene *scene)
-    :   Renderer(w, h, scene)
-{
-
+    mode = Renderer::Wireframer;
 }
 
 QImage Wireframer::generate(QProgressBar *progress, QImage image) {

@@ -16,11 +16,14 @@ public:
 
     static float dot_prod(Vector3D a, Vector3D b);
     static Vector3D cross_prod(Vector3D a, Vector3D b);
+    static Vector3D reflect(Vector3D vec, Vector3D normal);
     static Vector3D interpolate(Vector3D a, Vector3D b);
 
-    friend Vector3D operator+(const Vector3D & v1, const Vector3D v2);
-    friend Vector3D operator-(const Vector3D & v1, const Vector3D v2);
-    friend Vector3D operator*(const float & s, const Vector3D v);
+    friend Vector3D operator+(const Vector3D &v1, const Vector3D v2);
+    friend Vector3D operator-(const Vector3D &v1, const Vector3D v2);
+    friend Vector3D operator*(const float &s, const Vector3D v);
+    friend Vector3D operator/(const Vector3D v, const float &d);
+    friend Vector3D operator*(const Vector3D &v1, const Vector3D v2);
 
     friend std::ostream& operator<<(std::ostream& Str, const Vector3D& v);
     friend QDebug operator<< (QDebug d, const Vector3D &v);
