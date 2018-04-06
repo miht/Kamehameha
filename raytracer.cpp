@@ -65,7 +65,7 @@ Color RayTracer::trace(Ray ray, int depth) {
 //                //specular
                 Vector3D bisector = (-1*ray.direction.normalized ()+ ray_towards_light.direction.normalized ()).normalized();
                 specular = Vector3D::dot_prod (bisector, intersection.normal);
-                specular = std::powf(fmax(0, specular), m.spec_exp);
+                specular = powf(fmax(0, specular), m.spec_exp);
                 Vector3D spec_tot =  specular * m.specular;
 
                 c = c + light.intensity*light.color.asVector3D ()*diff_tot + light.intensity *light.color.asVector3D ()*spec_tot;

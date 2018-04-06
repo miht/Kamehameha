@@ -1,5 +1,7 @@
 #include "mathops.h"
 
+#include <QtMath>
+
 MathOps::MathOps()
 {
 
