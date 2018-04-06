@@ -44,8 +44,8 @@ Kamehameha::Kamehameha(QWidget *parent) :
     ui_widthField->setText (QString::number(scene->camera.viewportWidth));
     ui_heightField->setText (QString::number(scene->camera.viewportHeight));
 
-    //set to wireframe rendering mode at the start
-    ui->radioButton_4->click();
+    //set to path rendering mode at the start
+    ui->radioButton->click();
 
     graphicsView->setScene(graphicsScene);
 
@@ -113,6 +113,10 @@ void Kamehameha::processImage(int index) {
     QGraphicsPixmapItem* item = graphicsScene->addPixmap(QPixmap::fromImage (img));
 
     item->setPos(offsetX, offsetY);
+
+    if(watcher->progressValue () >= watcher->progressMaximum ()) {
+        stopRender ();
+    }
 }
 
 void Kamehameha::startRender() {
@@ -187,17 +191,15 @@ void Kamehameha::startRender() {
 
 void Kamehameha::finishRender () {
     stopRender();
-    resetRender();
 }
 
 void Kamehameha::stopRender () {
     watcher->cancel ();
-    //    ui_renderProgressBar->setValue(ui_renderProgressBar->maximum ());
+    ui_cancelButton->setVisible(false);
+    ui_renderButton->setText("Render");
 }
 
 void Kamehameha::resetRender () {
-    ui_cancelButton->setVisible(false);
-    ui_renderButton->setText("Render");
     ui_renderProgressBar->setValue(0);
 }
 
