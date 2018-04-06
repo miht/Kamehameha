@@ -1,12 +1,16 @@
 #include "color.h"
 #include "mathops.h"
 
+/**
+ * @brief Color::Color with range 0.0 - 1.0
+ */
+
 Color::Color()
 {
     r = g = b = 0.0;
 }
 
-Color::Color(int r, int g, int b)
+Color::Color(float r, float g, float b)
     :   r(r), g(g), b(b)
 {
 
@@ -14,13 +18,13 @@ Color::Color(int r, int g, int b)
 
 Color::Color(Vector3D rgb_vector)
 {
-    r = MathOps::clamp(rgb_vector.x, 0, 255);
-    g = MathOps::clamp(rgb_vector.y, 0, 255);
-    b = MathOps::clamp(rgb_vector.z, 0, 255);
+    r = MathOps::clamp(rgb_vector.x, 0.0, 1.0);
+    g = MathOps::clamp(rgb_vector.y, 0.0, 1.0);
+    b = MathOps::clamp(rgb_vector.z, 0.0, 1.0);
 }
 
 QColor Color::asQColor() {
-    return QColor(r, g, b);
+    return QColor(255*r, 255*g, 255*b);
 }
 
 Vector3D Color::asVector3D() {

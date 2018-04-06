@@ -27,8 +27,7 @@ QImage RayTracer::generate(QProgressBar *progress, QImage image)
                 ray = Ray(scene->camera.position, worldPos - scene->camera.position);
             }
 
-            Color color = trace(ray, 1);
-
+            Color color = trace(ray, 0);
             image.setPixelColor(x, y, color.asQColor ());
             //progress->setValue(progress->value() + 1); //update progress bar
         }
@@ -45,7 +44,7 @@ Color RayTracer::trace(Ray ray, int depth) {
     if(intersection.didHit()) {
         //material of intersected face
         Material m = scene->model.materials.value(intersection.material);
-        Vector3D c = 255 * scene->ambient_intensity * m.ambient;
+        Vector3D c = scene->ambient_intensity * m.ambient;
 
         //SECOND TRACE, TBD TBD, FOR EACH LIGHT AND SO ON
         for(Light light : scene->lights) {
@@ -69,7 +68,7 @@ Color RayTracer::trace(Ray ray, int depth) {
                 specular = std::powf(fmax(0, specular), m.spec_exp);
                 Vector3D spec_tot =  specular * m.specular;
 
-                c = c + 255*light.intensity* diff_tot + 255* light.intensity * spec_tot;
+                c = c + light.intensity*light.color.asVector3D ()*diff_tot + light.intensity *light.color.asVector3D ()*spec_tot;
             }
         }
         if(m.illModel.reflection) {
@@ -80,7 +79,7 @@ Color RayTracer::trace(Ray ray, int depth) {
         return Color(c);
     }
     else {
-        return scene->ambient_color;
+        return Color(scene->ambient_intensity*scene->ambient_color.asVector3D ());
     }
 }
 

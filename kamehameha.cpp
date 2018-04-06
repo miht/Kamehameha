@@ -12,6 +12,18 @@ Kamehameha::Kamehameha(QWidget *parent) :
     ui_logBrowser = findChild<QTextBrowser*>("logBrowser");
     ui_renderProgressBar = findChild<QProgressBar*>("renderProgressBar");
 
+    QString numberInputMask = "9000";
+    ui_widthField = ui->lineEdit_camWidth;
+    ui_widthField->setInputMask (numberInputMask);
+    ui_heightField = ui->lineEdit_camHeight;
+    ui_heightField->setInputMask (numberInputMask);
+
+    //Sliders
+    ui_depthSlider = ui->slider_depth;
+    ui_subdivisionSlider = ui->slider_subdivision;
+    ui_sampleSlider = ui->slider_samples;
+    ui_globalIlluCheckbox = ui->checkbox_global_illu;
+
     ui_renderProgressBar->setValue(0);
 
     //Initialize graphic elements and configure the graphics view
@@ -26,18 +38,17 @@ Kamehameha::Kamehameha(QWidget *parent) :
     scene = new Scene(0.1, Color(1,1,1));
     scene->camera.mode = Camera::perspective;
 
+    ui_widthField->setText (QString::number(scene->camera.viewportWidth));
+    ui_heightField->setText (QString::number(scene->camera.viewportHeight));
+
+    //set to wireframe rendering mode at the start
+    ui->radioButton_4->click();
+
     graphicsView->setScene(graphicsScene);
 
-//    scene->lights.push_back(Light(Vector3D(3, 3, 1), 0.6, Color(255, 255, 255)));
-    scene->lights.push_back(Light(Vector3D(-1, -3, -5), 0.3, Color(255,255,255)));
+    scene->lights.push_back(Light(Vector3D(3, 3, 1), 0.6, Color(1, 1, 1)));
+    scene->lights.push_back(Light(Vector3D(-1, -3, -5), 0.3, Color(1,1,1)));
 
-    //    for(QString m : scene->model.materials.keys ()) {
-    //        Material mat = scene->model.materials.value(m);
-    //        qDebug() << m << ": " << mat;
-    //    }
-
-    //CLICK HERE JUST TO TEST RAYTRACER
-    //    ui_renderButton->click ();
 }
 
 void Kamehameha::on_renderButton_clicked()
@@ -49,7 +60,11 @@ void Kamehameha::on_renderButton_clicked()
     case Renderer::Pathtracer:
     {
         PathTracer* pt = dynamic_cast<PathTracer*>(renderer);
-        int subdivisions = pt->subdivisions;
+//        pt->globalIllumination =
+        int subdivisions = ui->slider_subdivision->value ();
+        pt->depth = ui->slider_depth->value ();
+        pt->samples = ui->slider_samples->value ();
+        pt->globalIllumination = ui->checkbox_global_illu->checkState () == Qt::Checked;
 
         for(int i = 0; i < scene->camera.viewportWidth; i+= scene->camera.viewportWidth/subdivisions) {
             for(int j = 0; j < scene->camera.viewportHeight; j += scene->camera.viewportHeight/subdivisions) {
@@ -96,7 +111,8 @@ void Kamehameha::on_renderButton_clicked()
     {
         Wireframer* wf = dynamic_cast<Wireframer*>(renderer);
         QImage image(scene->camera.viewportWidth, scene->camera.viewportHeight, QImage::Format_ARGB32);
-        graphicsScene->addPixmap (QPixmap::fromImage(wf->generate (ui_renderProgressBar, image)));
+
+        graphicsScene->addPixmap (QPixmap::fromImage(wf->generate (ui_renderProgressBar, image.scaled (graphicsView->width (), graphicsView->height ()))));
         break;
     }
     default:
@@ -108,8 +124,8 @@ void Kamehameha::on_renderButton_clicked()
 
 void Kamehameha::on_cancelButton_clicked()
 {
-    QApplication::quit(); // placeholder
-
+    //stop the rendering
+    watcher->pause();
 }
 
 /**
@@ -124,6 +140,8 @@ void Kamehameha::processImage(int index) {
 
     float offsetX = img.offset().x() * scaleX;
     float offsetY = img.offset().y() * scaleY;
+    ui_renderProgressBar->setValue(ui_renderProgressBar->value() + img.width() * img.height());
+
 
     img = img.scaled (scaleX * img.width (), scaleY * img.height ());
 
@@ -131,7 +149,6 @@ void Kamehameha::processImage(int index) {
 
     item->setPos(offsetX, offsetY);
 
-    ui_renderProgressBar->setValue(ui_renderProgressBar->value() + img.width() * img.height());
 }
 
 Kamehameha::~Kamehameha()
@@ -140,6 +157,9 @@ Kamehameha::~Kamehameha()
     delete renderer;
     delete scene;
     delete ui;
+}
+
+void Kamehameha::updateResolution () {
 }
 
 void Kamehameha::on_toolButton_clicked()
@@ -179,4 +199,24 @@ void Kamehameha::on_radioButton_3_clicked()
 void Kamehameha::on_radioButton_4_clicked()
 {
     renderer = new Wireframer(scene);
+}
+
+void Kamehameha::on_lineEdit_camWidth_editingFinished()
+{
+    bool ok = true;
+    int w = ui_widthField->text ().toInt (&ok, 10);
+    qDebug() << scene->camera.viewportWidth;
+    qDebug() << scene->camera.viewportHeight;
+
+    scene->camera.viewportWidth = w;
+}
+
+void Kamehameha::on_lineEdit_camHeight_editingFinished()
+{
+    bool ok = true;
+    int h = ui_heightField->text ().toInt (&ok, 10);
+    qDebug() << scene->camera.viewportWidth;
+    qDebug() << scene->camera.viewportHeight;
+
+    scene->camera.viewportHeight = h;
 }

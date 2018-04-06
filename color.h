@@ -7,12 +7,12 @@
 class Color
 {
 public:
-    int r;
-    int g;
-    int b;
+    float r;
+    float g;
+    float b;
 
     Color();
-    Color(int r, int g, int b); //range 0-255
+    Color(float r, float g, float b); //range 0-1
     Color(Vector3D rgb_vector);
 
     void lighten(float value);

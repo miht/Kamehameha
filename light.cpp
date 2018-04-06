@@ -9,5 +9,5 @@ Light::Light()
 {
     position = Vector3D(0,0,0);
     intensity = 1.0;
-    color = Color(255,255,255);
+    color = Color(1,1,1);
 }

@@ -27,7 +27,7 @@ QImage PathTracer::generate(QProgressBar *progress, QImage image)
                 Vector3D worldPos = screenToWorldCoordinates (Vector3D(x + image.offset ().x (), y + image.offset ().y (), scene->camera.position.z + scene->camera.depth));
                 ray = Ray(scene->camera.position, worldPos - scene->camera.position);
             }
-            Color color = Color(255 * trace(ray, 2).asVector3D ());
+            Color color = trace(ray, depth);
 
             image.setPixelColor(x, y, color.asQColor ());
         }
@@ -65,34 +65,37 @@ Color PathTracer::trace(Ray ray, int depth) {
             Intersection intersection2 = findIntersection (ray_towards_light, t0_1, t1_1);
 
             if(!intersection2.didHit()) {
+                float diff_tot = fmax(0, Vector3D::dot_prod (ray_towards_light.direction.normalized (), normal));
                 directLightContrib = directLightContrib +
-                        light.intensity*fmax(0, Vector3D::dot_prod (ray_towards_light.direction.normalized (), normal)) * Vector3D(1,1,1);
+                        diff_tot*light.intensity*light.color.asVector3D ();
             }
         }
 
-        uint32_t N = 32;// / (depth + 1);
-        Vector3D Nt, Nb;
-        createCoordinateSystem(normal, Nt, Nb);
-        float pdf = 1 / (2 * M_PI);
-        for (uint32_t n = 0; n < N; ++n) {
-            float r1 = distribution(generator);
-            float r2 = distribution(generator);
-            Vector3D sample = uniformSampleHemisphere(r1, r2);
-            Vector3D sampleWorld(
-                        sample.x * Nb.x + sample.y * normal.x + sample.z * Nt.x,
-                        sample.x * Nb.y + sample.y * normal.y + sample.z * Nt.y,
-                        sample.x * Nb.z + sample.y * normal.z + sample.z * Nt.z);
-            // don't forget to divide by PDF and multiply by cos(theta)
-            indirectLightContrib = indirectLightContrib + r1 * (1/pdf)*trace(Ray(intersection.point + sampleWorld, sampleWorld), depth - 1).asVector3D ();
+        if(globalIllumination) {
+            uint32_t N = 32;// / (depth + 1);
+            Vector3D Nt, Nb;
+            createCoordinateSystem(normal, Nt, Nb);
+            float pdf = 1 / (2 * M_PI);
+            for (uint32_t n = 0; n < N; ++n) {
+                float r1 = distribution(generator);
+                float r2 = distribution(generator);
+                Vector3D sample = uniformSampleHemisphere(r1, r2);
+                Vector3D sampleWorld(
+                            sample.x * Nb.x + sample.y * normal.x + sample.z * Nt.x,
+                            sample.x * Nb.y + sample.y * normal.y + sample.z * Nt.y,
+                            sample.x * Nb.z + sample.y * normal.z + sample.z * Nt.z);
+                // don't forget to divide by PDF and multiply by cos(theta)
+                indirectLightContrib = indirectLightContrib + r1 * (1/pdf)*trace(Ray(intersection.point + sampleWorld, sampleWorld), depth - 1).asVector3D ();
+            }
+    //        qDebug() << indirectLightContrib;
+            // divide by N
+            indirectLightContrib = indirectLightContrib / ((float) N);
         }
-//        qDebug() << indirectLightContrib;
-        // divide by N
-        indirectLightContrib = indirectLightContrib / ((float) N);
 
         hitColor = (directLightContrib/M_PI + 2 * indirectLightContrib)*m.diffuse;
     }
     else {
-        hitColor = Vector3D(0,0,0);
+        return Color(scene->ambient_intensity*scene->ambient_color.asVector3D ());
     }
     return hitColor;
 }

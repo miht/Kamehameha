@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>846</width>
+    <width>1024</width>
     <height>753</height>
    </rect>
   </property>
@@ -105,81 +105,193 @@
            </layout>
           </item>
           <item>
-           <layout class="QFormLayout" name="formLayout_2">
-            <property name="labelAlignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_7">
-              <property name="text">
-               <string>Faces</string>
-              </property>
-             </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,1">
+            <item>
+             <layout class="QVBoxLayout" name="info_camera" stretch="0,1">
+              <item>
+               <widget class="QLabel" name="label_8">
+                <property name="text">
+                 <string>Model</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QFormLayout" name="formLayout_2">
+                <property name="labelAlignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_10">
+                  <property name="text">
+                   <string>Objects</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_11">
+                  <property name="text">
+                   <string>Faces</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLabel" name="label_objects">
+                  <property name="text">
+                   <string>23</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLabel" name="label_faces">
+                  <property name="text">
+                   <string>4231</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
             </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="label_10">
-              <property name="text">
-               <string>3213</string>
-              </property>
-             </widget>
+            <item>
+             <layout class="QVBoxLayout" name="info_model" stretch="0,1,1">
+              <item>
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>Camera</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="title">
+                 <string>Projection</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+                <property name="flat">
+                 <bool>false</bool>
+                </property>
+                <property name="checkable">
+                 <bool>false</bool>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+                <widget class="QRadioButton" name="rb_ortho">
+                 <property name="geometry">
+                  <rect>
+                   <x>10</x>
+                   <y>30</y>
+                   <width>100</width>
+                   <height>16</height>
+                  </rect>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>Orthographic</string>
+                 </property>
+                </widget>
+                <widget class="QRadioButton" name="rb_persp">
+                 <property name="geometry">
+                  <rect>
+                   <x>120</x>
+                   <y>30</y>
+                   <width>100</width>
+                   <height>16</height>
+                  </rect>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>Perspective</string>
+                 </property>
+                </widget>
+               </widget>
+              </item>
+              <item>
+               <layout class="QFormLayout" name="formLayout_7">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_9">
+                  <property name="text">
+                   <string>Resolution</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <layout class="QHBoxLayout" name="horizontalLayout_11">
+                  <property name="leftMargin">
+                   <number>16</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>16</number>
+                  </property>
+                  <item>
+                   <widget class="QLineEdit" name="lineEdit_camWidth">
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                    <property name="placeholderText">
+                     <string>Width</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_18">
+                    <property name="text">
+                     <string>x</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLineEdit" name="lineEdit_camHeight">
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                    <property name="placeholderText">
+                     <string>Height</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </item>
+             </layout>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_8">
-              <property name="text">
-               <string>Vertices</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLabel" name="label_11">
-              <property name="text">
-               <string>323113</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_9">
-              <property name="text">
-               <string>Ambient color</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QPushButton" name="pushButton">
-              <property name="text">
-               <string>Select color</string>
-              </property>
-              <property name="checkable">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_14">
-              <property name="text">
-               <string>Objects</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="label_15">
-              <property name="text">
-               <string>4</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <spacer name="verticalSpacer">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="meta_layout">
+            <item>
+             <layout class="QFormLayout" name="formLayout_5"/>
             </item>
            </layout>
           </item>
@@ -306,7 +418,7 @@
                </widget>
               </item>
               <item row="2" column="1">
-               <widget class="QSlider" name="horizontalSlider_2">
+               <widget class="QSlider" name="slider_depth">
                 <property name="maximumSize">
                  <size>
                   <width>256</width>
@@ -338,7 +450,7 @@
                </widget>
               </item>
               <item row="3" column="1">
-               <widget class="QSlider" name="horizontalSlider">
+               <widget class="QSlider" name="slider_samples">
                 <property name="maximumSize">
                  <size>
                   <width>256</width>
@@ -370,7 +482,7 @@
                </widget>
               </item>
               <item row="4" column="1">
-               <widget class="QCheckBox" name="checkBox">
+               <widget class="QCheckBox" name="checkbox_global_illu">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -393,7 +505,7 @@
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QSlider" name="horizontalSlider_3">
+               <widget class="QSlider" name="slider_subdivision">
                 <property name="minimum">
                  <number>1</number>
                 </property>
@@ -472,7 +584,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>846</width>
+     <width>1024</width>
      <height>22</height>
     </rect>
    </property>

@@ -144,9 +144,7 @@ QMap<QString, Material> ObjParser::parseMaterial(QString path) {
             material.dissolved = file.readLine ().trimmed().split(' ').value(1).toFloat ();
 
             int v = file.readLine ().trimmed().split(' ').value(1).toInt ();
-            qDebug() << v;
             material.illModel = IlluminationModel(v);
-            qDebug() << material.illModel.reflection;
 
 //            qDebug() << material;
 

@@ -16,6 +16,9 @@
 #include <QList>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QLabel>
+#include <QLineEdit>
+#include <QCheckBox>
 
 #include <QFutureWatcher>
 
@@ -54,15 +57,30 @@ private slots:
 
     void on_radioButton_4_clicked();
 
+    void on_lineEdit_camWidth_editingFinished();
+
+    void on_lineEdit_camHeight_editingFinished();
+
 private:
     Ui::MainWindow *ui;
     QPushButton *ui_renderButton;
     QPushButton *ui_cancelButton;
+
     QTextBrowser *ui_logBrowser;
     QProgressBar *ui_renderProgressBar;
 
     QGraphicsScene *graphicsScene;
     QGraphicsView *graphicsView;
+
+    QLineEdit *ui_widthField;
+    QLineEdit *ui_heightField;
+
+    QSlider *ui_sampleSlider;
+    QSlider *ui_subdivisionSlider;
+    QSlider *ui_depthSlider;
+    QCheckBox *ui_globalIlluCheckbox;
+
+    void updateResolution();
 };
 
 #endif // MAINWINDOW_H
