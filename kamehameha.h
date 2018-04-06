@@ -19,6 +19,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QCheckBox>
+#include <QMessageBox>
 
 #include <QFutureWatcher>
 
@@ -42,12 +43,15 @@ public:
     Scene *scene;
     explicit Kamehameha(QWidget *parent = 0);
 
+    static int showMessageDialog(QString title, QString message);
+
     ~Kamehameha();
 
 private slots:
     void on_renderButton_clicked();
     void on_cancelButton_clicked();
     void processImage(int index);
+    void finishRender();
 
     void on_toolButton_clicked();
 
@@ -80,6 +84,9 @@ private:
     QSlider *ui_depthSlider;
     QCheckBox *ui_globalIlluCheckbox;
 
+    void startRender();
+    void stopRender();
+    void resetRender();
     void updateResolution();
 };
 

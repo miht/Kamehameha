@@ -31,12 +31,15 @@ Kamehameha::Kamehameha(QWidget *parent) :
     graphicsView = ui->graphicsView;
     graphicsView->setSceneRect (0,0,graphicsView->width(), graphicsView->height ());
 
+    scene = new Scene(0.1, Color(1,1,1));
+    scene->camera.mode = Camera::perspective;
+
     // configure progress bar
     ui_renderProgressBar->setMinimum(0);
     ui_renderProgressBar->setMaximum(scene->camera.viewportWidth * scene->camera.viewportHeight);
 
-    scene = new Scene(0.1, Color(1,1,1));
-    scene->camera.mode = Camera::perspective;
+    //hide the cancel button
+    ui_cancelButton->setVisible(false);
 
     ui_widthField->setText (QString::number(scene->camera.viewportWidth));
     ui_heightField->setText (QString::number(scene->camera.viewportHeight));
@@ -49,11 +52,70 @@ Kamehameha::Kamehameha(QWidget *parent) :
     scene->lights.push_back(Light(Vector3D(3, 3, 1), 0.6, Color(1, 1, 1)));
     scene->lights.push_back(Light(Vector3D(-1, -3, -5), 0.3, Color(1,1,1)));
 
+    //Initialize the watcher
+    watcher = new QFutureWatcher<QImage>();
 }
 
 void Kamehameha::on_renderButton_clicked()
 {
-    watcher = new QFutureWatcher<QImage>();
+    //Enable the cancel button
+    if(watcher->isRunning()) {
+        if(watcher->isPaused ()) {
+            ui_renderButton->setText("Pause");
+            watcher->resume();
+        }
+        else {
+            ui_renderButton->setText("Resume");
+            watcher->pause();
+        }
+    }
+    else {
+        if(scene->model.objects.size () > 0) {
+            qDebug() << "Model is ok";
+            //Clear the progress bar
+            ui_renderProgressBar->setValue(0);
+            //show the cancel button
+            ui_cancelButton->setVisible(true);
+
+            //Reset the progress bar
+            ui_renderProgressBar->setValue(0);
+            startRender();
+            ui_renderButton->setText("Pause");
+        }
+        else {
+           showMessageDialog ("Bög", "No objects found. Did you specify a non-empty .obj file?");
+        }
+    }
+}
+
+void Kamehameha::on_cancelButton_clicked()
+{
+    stopRender();
+    resetRender();
+}
+
+/**
+ * @brief Kamehameha::processImage scales the image and inserts it with the proper
+ * offset within the graphicsview
+ * @param index
+ */
+void Kamehameha::processImage(int index) {
+    QImage img = watcher->resultAt(index);
+    float scaleX = graphicsView->width () / scene->camera.viewportWidth;
+    float scaleY = graphicsView->height () / scene->camera.viewportHeight;
+
+    float offsetX = img.offset().x() * scaleX;
+    float offsetY = img.offset().y() * scaleY;
+    ui_renderProgressBar->setValue(ui_renderProgressBar->value() + img.width() * img.height());
+
+    img = img.scaled (scaleX * img.width (), scaleY * img.height ());
+
+    QGraphicsPixmapItem* item = graphicsScene->addPixmap(QPixmap::fromImage (img));
+
+    item->setPos(offsetX, offsetY);
+}
+
+void Kamehameha::startRender() {
     QList<QImage> images; //the qtconcurrentmap will be applied to this list
 
     switch(renderer->mode) {
@@ -100,6 +162,7 @@ void Kamehameha::on_renderButton_clicked()
         };
 
         connect(watcher, SIGNAL(resultReadyAt(int)), this, SLOT(processImage(int)));
+        connect(watcher, SIGNAL(finished()), this, SLOT(finishRender()));
         watcher->setFuture (QtConcurrent::mapped(images, rendered));
         break;
     }
@@ -122,33 +185,20 @@ void Kamehameha::on_renderButton_clicked()
     }
 }
 
-void Kamehameha::on_cancelButton_clicked()
-{
-    //stop the rendering
-    watcher->pause();
+void Kamehameha::finishRender () {
+    stopRender();
+    resetRender();
 }
 
-/**
- * @brief Kamehameha::processImage scales the image and inserts it with the proper
- * offset within the graphicsview
- * @param index
- */
-void Kamehameha::processImage(int index) {
-    QImage img = watcher->resultAt(index);
-    float scaleX = graphicsView->width () / scene->camera.viewportWidth;
-    float scaleY = graphicsView->height () / scene->camera.viewportHeight;
+void Kamehameha::stopRender () {
+    watcher->cancel ();
+    //    ui_renderProgressBar->setValue(ui_renderProgressBar->maximum ());
+}
 
-    float offsetX = img.offset().x() * scaleX;
-    float offsetY = img.offset().y() * scaleY;
-    ui_renderProgressBar->setValue(ui_renderProgressBar->value() + img.width() * img.height());
-
-
-    img = img.scaled (scaleX * img.width (), scaleY * img.height ());
-
-    QGraphicsPixmapItem* item = graphicsScene->addPixmap(QPixmap::fromImage (img));
-
-    item->setPos(offsetX, offsetY);
-
+void Kamehameha::resetRender () {
+    ui_cancelButton->setVisible(false);
+    ui_renderButton->setText("Render");
+    ui_renderProgressBar->setValue(0);
 }
 
 Kamehameha::~Kamehameha()
@@ -179,7 +229,6 @@ void Kamehameha::on_toolButton_clicked()
     dir = info.absolutePath () + "/";
 
     scene->model = ObjParser::parse(dir, file);
-
 }
 
 //Path
@@ -219,4 +268,11 @@ void Kamehameha::on_lineEdit_camHeight_editingFinished()
     qDebug() << scene->camera.viewportHeight;
 
     scene->camera.viewportHeight = h;
+}
+
+int Kamehameha::showMessageDialog(QString title, QString message) {
+    QMessageBox msgBox;
+    msgBox.setWindowTitle(title);
+    msgBox.setText(message);
+    msgBox.exec();
 }
