@@ -1,34 +1,18 @@
 #ifndef RAYTRACER_H
 #define RAYTRACER_H
 
-#include <QProgressBar>
-#include <QTextStream>
-#include <QImage>
-#include <QGraphicsScene>
-#include <QPainter>
+#include "tracer.h"
 
-#include <QDebug>
-
-#include "renderer.h"
-#include "objparser.h"
-#include "vector3d.h"
-#include "color.h"
-#include "model.h"
-#include "light.h"
-#include "ray.h"
-#include "intersection.h"
-
-class RayTracer : public Renderer
+class RayTracer : public Tracer
 {
 public:
     int subdivisions = 4;
 
     RayTracer(Scene *scene);
-    QImage generate(QProgressBar *progress, QImage image) override;
+//    QImage generate(QProgressBar *progress, QImage image) override;
+    Color trace(Ray ray, int depth) override;
 
 private:
-    Color trace(Ray ray, int depth);
-    Intersection findIntersection(Ray ray, float &t0, float &t1);
 };
 
 #endif // RAYTRACER_H

@@ -7,6 +7,7 @@
 #include "ray.h"
 #include "vertex3d.h"
 #include "intersection.h"
+#include "vector3d.h"
 
 class Face
 {
@@ -14,6 +15,8 @@ public:
     enum Geometry {triangle, quadrilateral, sphere, polygon};
     Geometry type;
     Face(QString material);
+
+    Vector3D midpoint;
 
     virtual bool intersects(Ray ray, float &t0, float &t1, Intersection &intersection, bool smooth);
     virtual std::vector<Vertex3D> getVertices() const;

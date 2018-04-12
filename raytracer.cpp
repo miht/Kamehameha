@@ -5,104 +5,55 @@
 #include <QProgressBar>
 
 RayTracer::RayTracer(Scene *scene)
-    :   Renderer(scene)
+    :   Tracer(scene)
 {
-    mode = Renderer::Raytracer;
-}
-
-QImage RayTracer::generate(QProgressBar *progress, QImage image)
-{
-    // Plain PPM format
-    //out << "P3\n" << w << ' ' << h << ' ' << "255\n";
-    // Iterate over all pixels in image
-    for (int x = 0; x < image.width (); x++) {
-        for (int y = 0; y < image.height (); y++) {
-            Ray ray;
-            if(scene->camera.mode == Camera::ortographic) {
-                Vector3D worldPos = screenToWorldCoordinates (Vector3D(x + image.offset ().x (), y + image.offset ().y (), 0));
-                ray = Ray(worldPos, Vector3D(0, 0, 1));
-            }
-            else if(scene->camera.mode == Camera::perspective) {
-                Vector3D worldPos = screenToWorldCoordinates (Vector3D(x + image.offset ().x (), y + image.offset ().y (), scene->camera.position.z + scene->camera.depth));
-                ray = Ray(scene->camera.position, worldPos - scene->camera.position);
-            }
-
-            Color color = trace(ray, 0);
-            image.setPixelColor(x, y, color.asQColor ());
-            //progress->setValue(progress->value() + 1); //update progress bar
-        }
-    }
-    return image;
+    mode = Tracer::Raytracer;
 }
 
 Color RayTracer::trace(Ray ray, int depth) {
-    Vector3D col_tot = Vector3D(0,0,0);
+    if(depth < 0) {
+        return Color(scene->ambient_intensity*scene->ambient_color.asVector3D ());
+    }
     float t0_0 = 0.001;
     float t1_0 = 20000;
     Intersection intersection = findIntersection (ray, t0_0, t1_0);
 
     if(intersection.didHit()) {
+        Vector3D normal = intersection.normal;
         //material of intersected face
         Material m = scene->model.materials.value(intersection.material);
-        Vector3D c = scene->ambient_intensity * m.ambient;
+        Vector3D c = scene->ambient_intensity*m.diffuse;
 
-        //SECOND TRACE, TBD TBD, FOR EACH LIGHT AND SO ON
+        // compute lambertian shading and phong shading
+        Vector3D cDiff, cSpec;
         for(Light light : scene->lights) {
             Ray ray_towards_light = Ray(intersection.point, light.position - intersection.point);
             float t0_1 = 0.001;
-            float t1_1 = 20000;
+            float t1_1 = ray_towards_light.direction.norm ();
             Intersection intersection2 = findIntersection (ray_towards_light, t0_1, t1_1);
 
             if(!intersection2.didHit()) {
-                float diffuse, specular;
-
-                //phong
                 //diffuse
-                diffuse = Vector3D::dot_prod (ray_towards_light.direction.normalized (), intersection.normal);
+                float diffuse = Vector3D::dot_prod (ray_towards_light.direction.normalized (), normal);
                 diffuse = fmax(0, diffuse);
-                Vector3D diff_tot =  diffuse * m.diffuse;
+                cDiff = cDiff + light.intensity*diffuse*light.color.asVector3D ();
 
-//                //specular
+                //specular
                 Vector3D bisector = (-1*ray.direction.normalized ()+ ray_towards_light.direction.normalized ()).normalized();
-                specular = Vector3D::dot_prod (bisector, intersection.normal);
-                specular = powf(fmax(0, specular), m.spec_exp);
-                Vector3D spec_tot =  specular * m.specular;
-
-                c = c + light.intensity*light.color.asVector3D ()*diff_tot + light.intensity *light.color.asVector3D ()*spec_tot;
+                float specular = Vector3D::dot_prod (bisector, normal);
+                specular = std::powf(fmax(0, specular), m.spec_exp);
+                cSpec = cSpec + light.intensity*specular*light.color.asVector3D ();
             }
         }
         if(m.illModel.reflection) {
-            if(depth > 0) {
-                c = c + 0.2*trace(Ray(intersection.point, Vector3D::reflect (ray.direction, intersection.normal).normalized ()), depth - 1).asVector3D ();
-            }
+            c = c + 0.5*trace(Ray(intersection.point, Vector3D::reflect (ray.direction, normal).normalized ()), depth - 1).asVector3D ();
         }
+
+        c = c + cDiff * m.diffuse + cSpec*m.specular;
         return Color(c);
     }
     else {
-        return Color(scene->ambient_intensity*scene->ambient_color.asVector3D ());
+        return Color(0,0,0);
     }
-}
-
-Intersection RayTracer::findIntersection (Ray ray, float &t0, float &t1) {
-    Intersection final_intersection;
-    float shortest = 20000;
-
-    for(Object object : scene->model.objects) {
-        if(object.bbox.intersects (ray, t0, t1)) { // REPLACE WITH IF OBJECT.BOUNDING BOX INTERSECTS SOME RAY!!!!!
-            for(Face* face : object.faces) {
-                float t1_n = 20000;
-                Intersection intersection;
-                if(face->intersects (ray, t0, t1_n, intersection, true)) {
-                    if(t1_n < shortest) {
-                        final_intersection = intersection;
-                        shortest = t1_n;
-                    }
-                }
-            }
-        }
-    }
-
-    t1 = shortest;
-    return final_intersection;
 }
 

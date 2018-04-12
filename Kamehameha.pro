@@ -49,7 +49,9 @@ SOURCES += \
     illuminationmodel.cpp \
     pathtracer.cpp \
     camera.cpp \
-    mathops.cpp
+    mathops.cpp \
+    matrix3d.cpp \
+    tracer.cpp
 
 HEADERS += \
     vector3d.h \
@@ -75,7 +77,9 @@ HEADERS += \
     illuminationmodel.h \
     pathtracer.h \
     camera.h \
-    mathops.h
+    mathops.h \
+    matrix3d.h \
+    tracer.h
 
 FORMS += \
         mainwindow.ui

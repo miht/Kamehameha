@@ -7,6 +7,11 @@ Triangle::Triangle(Vertex3D v1, Vertex3D v2, Vertex3D v3, QString material)
     vertices.push_back(v1);
     vertices.push_back(v2);
     vertices.push_back(v3);
+
+    //calculate triangle midpoint
+    midpoint.x = (v1.position.x + v2.position.x + v3.position.x)/3;
+    midpoint.y = (v1.position.y + v2.position.y + v3.position.y)/3;
+    midpoint.z = (v1.position.z + v2.position.z + v3.position.z)/3;
 }
 
 bool Triangle::intersects(Ray ray, float &t0, float &t1, Intersection &intersection, bool smooth) {
@@ -39,8 +44,10 @@ bool Triangle::intersects(Ray ray, float &t0, float &t1, Intersection &intersect
         v = inv_det * Vector3D::dot_prod (ray.direction, qvec);
         if (v < 0.0 || u + v > 1.0) return false;
 
-        t1 = inv_det * Vector3D::dot_prod (edge2, qvec);
-        if(t1 <= t0) return false; //distance negative => object is behind ray
+        float dist = inv_det * Vector3D::dot_prod (edge2, qvec);
+        if(dist <= t0) return false; //distance negative => object is behind ray
+        if(dist > t1) return false; //distance too large => object is too far away
+        t1 = dist;
 
         if(smooth) {
             normal = u * vertices[1].normal.normalized ()+ v*vertices[2].normal.normalized ()+ (1 - u - v)*vertices[0].normal.normalized ();

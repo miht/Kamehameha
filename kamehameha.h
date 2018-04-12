@@ -51,7 +51,6 @@ private slots:
     void on_renderButton_clicked();
     void on_cancelButton_clicked();
     void processImage(int index);
-    void finishRender();
 
     void on_toolButton_clicked();
 
@@ -64,6 +63,10 @@ private slots:
     void on_lineEdit_camWidth_editingFinished();
 
     void on_lineEdit_camHeight_editingFinished();
+
+    void on_rb_ortho_clicked();
+
+    void on_rb_persp_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -84,9 +87,14 @@ private:
     QSlider *ui_depthSlider;
     QCheckBox *ui_globalIlluCheckbox;
 
+    enum State {rendering, paused, cancelled};
+    State state = cancelled;
+
     void startRender();
-    void stopRender();
+    void cancelRender();
+    void pauseRender();
     void resetRender();
+
     void updateResolution();
 };
 
