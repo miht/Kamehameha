@@ -27,7 +27,6 @@ public:
 
     Tracer(Scene *scene);
     QImage generate(QProgressBar *progress, QImage image) override;
-    Intersection findIntersection(Ray ray, float &t0, float &t1);
 
     virtual Color trace(Ray ray, int depth);
 

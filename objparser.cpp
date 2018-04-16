@@ -13,6 +13,7 @@ ObjParser::ObjParser()
 Model ObjParser::parse(QString absPath, QString filePath)
 {
     Model model = Model();
+    std::vector<Face*> faces;
 
     std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
     std::vector<Vector3D> temp_vertices;
@@ -35,33 +36,12 @@ Model ObjParser::parse(QString absPath, QString filePath)
             model.materials = parseMaterial(absPath + sl.value(1));
         }
         else if (sl.value(0) == "o") { //new object
-            model.objects.push_back (Object(sl.value(1)));
+//            model.objects.push_back (Object(sl.value(1)));
         }
         else if (sl.value(0) == "v") { //vertex
             Vector3D vertex = Vector3D(sl.value(1).toFloat(),
                                        -sl.value(2).toFloat(), //negative y value to turn things upside down
                                        -sl.value(3).toFloat()); //negative z value to compensate for export y-direction in blender
-
-            //Set the bounding box of the object
-            //This code is too large, must clean up
-            if(vertex.x < model.objects.back ().bbox.min.x) {
-                model.objects.back ().bbox.min.x = vertex.x;
-            }
-            if(vertex.x > model.objects.back().bbox.max.x) {
-                model.objects.back ().bbox.max.x = vertex.x;
-            }
-            if(vertex.y < model.objects.back ().bbox.min.y) {
-                model.objects.back ().bbox.min.y = vertex.y;
-            }
-            if(vertex.y > model.objects.back().bbox.max.y) {
-                model.objects.back ().bbox.max.y = vertex.y;
-            }
-            if(vertex.z < model.objects.back ().bbox.min.z) {
-                model.objects.back ().bbox.min.z = vertex.z;
-            }
-            if(vertex.z > model.objects.back().bbox.max.z) {
-                model.objects.back ().bbox.max.z = vertex.z;
-            }
             temp_vertices.push_back(vertex);
         } else if (sl.value(0) == "vt") {
             Vector2D uv = Vector2D(sl.value(1).toFloat(), sl.value(2).toFloat());
@@ -86,7 +66,8 @@ Model ObjParser::parse(QString absPath, QString filePath)
             Vertex3D v2 = Vertex3D(Vector3D(temp_vertices[vertexIndex[1] - 1]), Vector3D(temp_normals[normalIndex[1] - 1]));
             Vertex3D v3 = Vertex3D(Vector3D(temp_vertices[vertexIndex[2] - 1]), Vector3D(temp_normals[normalIndex[2] - 1]));
 
-            model.objects.back ().faces.push_back(new Triangle(v1, v2, v3, current_material));
+//            model.objects.back ().faces.push_back(new Triangle(v1, v2, v3, current_material));
+            faces.push_back (new Triangle(v1, v2, v3, current_material));
             //            qDebug() << current_material;
 
             //TODO implement UV mappings
@@ -97,11 +78,16 @@ Model ObjParser::parse(QString absPath, QString filePath)
 
 
         } else if(sl.value(0) == "s") {
-            model.objects.back ().smooth = sl.value(1) != "off";
+//            model.objects.back ().smooth = sl.value(1) != "off";
+//            faces.back()->smooth = sl.value(1) != "off";
             //            isCurrentSmooth = sl.value(1) != "off";
         }
     }
     file.close ();
+
+    model.root = new KDNode();
+    model.root = model.root->build(faces, 0);
+
     return model;
 }
 
@@ -144,7 +130,11 @@ QMap<QString, Material> ObjParser::parseMaterial(QString path) {
             material.dissolved = file.readLine ().trimmed().split(' ').value(1).toFloat ();
 
             int v = file.readLine ().trimmed().split(' ').value(1).toInt ();
+            qDebug() << mat_name;
+            qDebug() << material.illModel.reflection;
             material.illModel = IlluminationModel(v);
+            qDebug() << material.illModel.reflection;
+
 
 //            qDebug() << material;
 

@@ -12,10 +12,23 @@ Triangle::Triangle(Vertex3D v1, Vertex3D v2, Vertex3D v3, QString material)
     midpoint.x = (v1.position.x + v2.position.x + v3.position.x)/3;
     midpoint.y = (v1.position.y + v2.position.y + v3.position.y)/3;
     midpoint.z = (v1.position.z + v2.position.z + v3.position.z)/3;
+
+    //calculate bounding box
+    Vector3D max, min;
+    max.x = fmax(v1.position.x, fmax(v2.position.x, v3.position.x));
+    max.y = fmax(v1.position.y, fmax(v2.position.y, v3.position.y));
+    max.z = fmax(v1.position.z, fmax(v2.position.z, v3.position.z));
+
+    min.x = fmin(v1.position.x, fmin(v2.position.x, v3.position.x));
+    min.y = fmin(v1.position.y, fmin(v2.position.y, v3.position.y));
+    min.z = fmin(v1.position.z, fmin(v2.position.z, v3.position.z));
+
+    bbox.max = max;
+    bbox.min = min;
 }
 
 bool Triangle::intersects(Ray ray, float &t0, float &t1, Intersection &intersection, bool smooth) {
-    float epsilon = 0.00001;
+    float epsilon = 0.00000001;
     Vector3D vec0 = vertices[0].position;
     Vector3D vec1 = vertices[1].position;
     Vector3D vec2 = vertices[2].position;
@@ -34,6 +47,7 @@ bool Triangle::intersects(Ray ray, float &t0, float &t1, Intersection &intersect
             return false;
 
         if (fabs(det) < epsilon) return false;
+
         inv_det = 1/det; //inv det
 
         tvec = ray.origin - vec0;

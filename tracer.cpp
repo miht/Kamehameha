@@ -24,8 +24,6 @@ QImage Tracer::generate(QProgressBar *progress, QImage image)
                     float r1 = distribution(generator);
                     float r2 = distribution(generator);
 
-                    qDebug() << r1 << ", " << r2;
-
                     Ray ray;
                     if(scene->camera.mode == Camera::ortographic) {
                         Vector3D worldPos = screenToWorldCoordinates (Vector3D(x + r1 + image.offset ().x (), y + r2 + image.offset ().y (), 0));
@@ -66,25 +64,3 @@ Color Tracer::trace(Ray ray, int depth) {
     return Color(0,0,0);
 }
 
-Intersection Tracer::findIntersection (Ray ray, float &t0, float &t1) {
-    Intersection final_intersection;
-    float shortest = 20000;
-
-    for(Object object : scene->model.objects) {
-        if(object.bbox.intersects (ray, t0, t1)) { // REPLACE WITH IF OBJECT.BOUNDING BOX INTERSECTS SOME RAY!!!!!
-            for(Face* face : object.faces) {
-                float t1_n = 20000;
-                Intersection intersection;
-                if(face->intersects (ray, t0, t1_n, intersection, true)) {
-                    if(t1_n < shortest) {
-                        final_intersection = intersection;
-                        shortest = t1_n;
-                    }
-                }
-            }
-        }
-    }
-
-    t1 = shortest;
-    return final_intersection;
-}

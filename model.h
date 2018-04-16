@@ -5,12 +5,14 @@
 
 #include "material.h"
 #include "object.h"
+#include "kdnode.h"
 
 class Model
 {
 public:
     QMap<QString, Material> materials;
     std::vector<Object> objects;
+    KDNode* root;
 
     Model();
 };

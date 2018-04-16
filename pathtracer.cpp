@@ -17,40 +17,41 @@ std::uniform_real_distribution<float> distribution_path(0, 1);
 Color PathTracer::trace(Ray ray, int depth) {
     if (depth < 0) {
 //        return Color(Vector3D(1,1,1));  // Bounced enough times, return background
-        return Color(scene->ambient_intensity*scene->ambient_color.asVector3D ());
+//        return Color(scene->ambient_intensity*scene->ambient_color.asVector3D ());
+        return Color(0,0,0);
     }
 
     float t0_0 = 0.001;
     float t1_0 = 20000;
-    Intersection intersection = findIntersection (ray, t0_0, t1_0);
-
-    if(intersection.didHit()) {
+    Intersection intersection;
+    if(scene->model.root->hit(ray, t0_0, t1_0, intersection)) {
         Vector3D normal = intersection.normal;
         //material of intersected face
         Material m = scene->model.materials.value(intersection.material);
         Vector3D c = scene->ambient_intensity*m.diffuse;
 
         // compute direct illumination
-        Vector3D cDir;
+        Vector3D cDir, cDiff, cSpec;
         for (Light light : scene->lights) {
             Ray ray_towards_light = Ray(intersection.point, light.position - intersection.point);
             float t0_1 = 0.001;
             float t1_1 = ray_towards_light.direction.norm ();
-            Intersection intersection2 = findIntersection (ray_towards_light, t0_1, t1_1);
+            Intersection intersection2;
 
-            if(!intersection2.didHit()) {
+            if(!scene->model.root->hit(ray_towards_light, t0_1, t1_1, intersection2)) {
                 //diffuse
                 float diffuse = Vector3D::dot_prod (ray_towards_light.direction.normalized (), intersection.normal);
                 diffuse = fmax(0, diffuse);
+                cDiff = cDiff + light.intensity*diffuse*light.color.asVector3D ();
 
 //                //specular
-//                Vector3D bisector = (-1*ray.direction.normalized ()+ ray_towards_light.direction.normalized ()).normalized();
-//                specular = Vector3D::dot_prod (bisector, intersection.normal);
-//                specular = std::powf(fmax(0, specular), m.spec_exp);
-
-                cDir = cDir + light.intensity*diffuse*light.color.asVector3D ();// + specular * m.specular);
+                Vector3D bisector = (-1*ray.direction.normalized ()+ ray_towards_light.direction.normalized ()).normalized();
+                float specular = Vector3D::dot_prod (bisector, intersection.normal);
+                specular = std::powf(fmax(0, specular), m.spec_exp);
+                cSpec = cSpec + light.intensity*specular*light.color.asVector3D ();
             }
         }
+        cDir = cDiff + cSpec;
 
         Vector3D cIndir;
         if(globalIllumination) {
@@ -67,18 +68,18 @@ Color PathTracer::trace(Ray ray, int depth) {
                             sample.x * Nb.y + sample.y * normal.y + sample.z * Nt.y,
                             sample.x * Nb.z + sample.y * normal.z + sample.z * Nt.z);
                 // don't forget to divide by PDF and multiply by cos(theta)
-
-                cIndir = cIndir + (r1/pdf)*trace(Ray(intersection.point + 0.0001*sampleWorld, sampleWorld), depth - 1).asVector3D ();
+                cIndir = cIndir + (r1/pdf)*trace(Ray(intersection.point, sampleWorld), depth - 1).asVector3D ();
             }
             // divide by N
             cIndir = cIndir / ((float) N);
         }
+//        c = c + cDiff * m.diffuse + cSpec*m.specular;
 
-        c = c + (2*cDir + cIndir/M_PI)*m.diffuse + m.emissive;
+        c = (cDir/M_PI + 2*cIndir)*m.specular*m.diffuse + m.emissive;
         return Color(c);
     }
     else {
-        return Color(0,0,0);
+        return Color(scene->ambient_intensity*scene->ambient_color.asVector3D ());
     }
 }
 

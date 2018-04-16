@@ -8,6 +8,7 @@
 #include "vertex3d.h"
 #include "intersection.h"
 #include "vector3d.h"
+#include "boundingbox.h"
 
 class Face
 {
@@ -17,6 +18,7 @@ public:
     Face(QString material);
 
     Vector3D midpoint;
+    BoundingBox bbox;
 
     virtual bool intersects(Ray ray, float &t0, float &t1, Intersection &intersection, bool smooth);
     virtual std::vector<Vertex3D> getVertices() const;

@@ -31,7 +31,7 @@ Kamehameha::Kamehameha(QWidget *parent) :
     graphicsView = ui->graphicsView;
     graphicsView->setSceneRect (0,0,graphicsView->width(), graphicsView->height ());
 
-    scene = new Scene(0.1, Color(1,1,1));
+    scene = new Scene(0.2, Color(1,1,1));
     scene->camera.mode = Camera::perspective;
     scene->camera.setPosition (Vector3D(0,0,-5));
     scene->camera.lookAt(Vector3D(0,0,0));
@@ -53,8 +53,8 @@ Kamehameha::Kamehameha(QWidget *parent) :
 
 //    scene->lights.push_back(Light(Vector3D(0,0,0), 1, Color(1, 1, 1)));
 
-    scene->lights.push_back(Light(Vector3D(1.5, 1.5, 0.5), 0.3, Color(1, 1, 1)));
-    scene->lights.push_back(Light(Vector3D(-0.5, -1.5, -2.5), 0.6, Color(1,1,1)));
+//    scene->lights.push_back(Light(Vector3D(1.5, 1.5, 0.5), 0.3, Color(1, 1, 1)));
+//    scene->lights.push_back(Light(Vector3D(-0.5, -0.5, -2.5), 0.6, Color(1,1,1)));
 
     //Initialize the watcher
     watcher = new QFutureWatcher<QImage>();
@@ -70,7 +70,7 @@ void Kamehameha::on_renderButton_clicked()
             state = rendering;
         }
         else {
-            if(scene->model.objects.size () > 0) {
+            if(scene->model.root->faces.size() > 0) {
                 //show the cancel button
                 ui_cancelButton->setVisible(true);
 
@@ -221,6 +221,7 @@ Kamehameha::~Kamehameha()
 {
     delete watcher;
     delete renderer;
+    delete scene->model.root;
     delete scene;
     delete ui;
 }

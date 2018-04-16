@@ -51,7 +51,8 @@ SOURCES += \
     camera.cpp \
     mathops.cpp \
     matrix3d.cpp \
-    tracer.cpp
+    tracer.cpp \
+    kdnode.cpp
 
 HEADERS += \
     vector3d.h \
@@ -79,7 +80,8 @@ HEADERS += \
     camera.h \
     mathops.h \
     matrix3d.h \
-    tracer.h
+    tracer.h \
+    kdnode.h
 
 FORMS += \
         mainwindow.ui

@@ -1,11 +1,40 @@
 #include "boundingbox.h"
 
+BoundingBox::BoundingBox()
+    :   min(Vector3D(0,0,0)), max(Vector3D(0,0,0))
+{
+}
+
 BoundingBox::BoundingBox(Vector3D min, Vector3D max)
     :   min(min), max(max)
 {
 }
 
-bool BoundingBox::intersects(Ray ray, float &t0, float &t1) {
+int BoundingBox::getLongestAxis() {
+    float diffX = fabs(max.x - min.x);
+    float diffY = fabs(max.y - min.y);
+    float diffZ = fabs(max.z - min.z);
+
+    if(diffX > diffY && diffX > diffZ) return 0;    //X is longest
+    if(diffY > diffX && diffY > diffZ) return 1;    //Y is longest
+    if(diffZ > diffX && diffZ > diffY) return 2;    //Z is longest
+}
+
+void BoundingBox::expand(BoundingBox bbox) {
+    Vector3D tmpMax = bbox.max;
+    Vector3D tmpMin = bbox.min;
+
+    max.x = fmax(max.x, tmpMax.x);
+    max.y = fmax(max.y, tmpMax.y);
+    max.z = fmax(max.z, tmpMax.z);
+
+    min.x = fmin(min.x, tmpMin.x);
+    min.y = fmin(min.y, tmpMin.y);
+    min.z = fmin(min.z, tmpMin.z);
+}
+
+
+bool BoundingBox::intersects(Ray ray, float &t0, float &t1, Intersection &intersection) {
     float tmin, tmax, tymin, tymax, tzmin, tzmax;
     if (ray.direction.x >= 0) {
         tmin = (min.x - ray.origin.x) / ray.direction.x;
@@ -40,5 +69,5 @@ bool BoundingBox::intersects(Ray ray, float &t0, float &t1) {
         tmin = tzmin;
     if (tzmax < tmax)
         tmax = tzmax;
-    return ( (tmin < t1) && (tmax > t0) );
+    return ((tmin < t1) && (tmax > t0) );
 }

@@ -12,13 +12,17 @@ RayTracer::RayTracer(Scene *scene)
 
 Color RayTracer::trace(Ray ray, int depth) {
     if(depth < 0) {
-        return Color(scene->ambient_intensity*scene->ambient_color.asVector3D ());
+//        return Color(scene->ambient_intensity*scene->ambient_color.asVector3D ());
+        return Color(0,0,0);
     }
-    float t0_0 = 0.001;
+    float t0_0 = 0.000001;
     float t1_0 = 20000;
-    Intersection intersection = findIntersection (ray, t0_0, t1_0);
+//    Intersection intersection = findIntersection (ray, t0_0, t1_0);
+    Intersection intersection;
+    if(scene->model.root->hit(ray, t0_0, t1_0, intersection)) {
 
-    if(intersection.didHit()) {
+
+//    if(intersection.didHit()) {
         Vector3D normal = intersection.normal;
         //material of intersected face
         Material m = scene->model.materials.value(intersection.material);
@@ -28,11 +32,11 @@ Color RayTracer::trace(Ray ray, int depth) {
         Vector3D cDiff, cSpec;
         for(Light light : scene->lights) {
             Ray ray_towards_light = Ray(intersection.point, light.position - intersection.point);
-            float t0_1 = 0.001;
-            float t1_1 = ray_towards_light.direction.norm ();
-            Intersection intersection2 = findIntersection (ray_towards_light, t0_1, t1_1);
+            float t0_1 = 0.000001;
+            float t1_1 = 20000;
 
-            if(!intersection2.didHit()) {
+            Intersection intersection2;
+            if(!scene->model.root->hit(ray_towards_light, t0_1, t1_1, intersection2)) {
                 //diffuse
                 float diffuse = Vector3D::dot_prod (ray_towards_light.direction.normalized (), normal);
                 diffuse = fmax(0, diffuse);
@@ -53,7 +57,7 @@ Color RayTracer::trace(Ray ray, int depth) {
         return Color(c);
     }
     else {
-        return Color(0,0,0);
+        return Color(scene->ambient_intensity*scene->ambient_color.asVector3D ());
     }
 }
 
