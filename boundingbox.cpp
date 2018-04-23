@@ -18,6 +18,8 @@ int BoundingBox::getLongestAxis() {
     if(diffX > diffY && diffX > diffZ) return 0;    //X is longest
     if(diffY > diffX && diffY > diffZ) return 1;    //Y is longest
     if(diffZ > diffX && diffZ > diffY) return 2;    //Z is longest
+
+    return 1;
 }
 
 void BoundingBox::expand(BoundingBox bbox) {
@@ -50,6 +52,7 @@ bool BoundingBox::intersects(Ray ray, float &t0, float &t1, Intersection &inters
         tymin = (max.y - ray.origin.y) / ray.direction.y;
         tymax = (min.y - ray.origin.y) / ray.direction.y;
     }
+
     if ((tmin > tymax) || (tymin > tmax) )
         return false;
     if (tymin > tmin)

@@ -1,7 +1,7 @@
 #ifndef VERTEX3D_H
 #define VERTEX3D_H
 
-#include "vector3d.h"
+#include "geometry.h"
 #include <QDebug>
 #include <iostream>
 

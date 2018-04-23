@@ -1,5 +1,4 @@
 #include "pathtracer.h"
-#include "math.h"
 
 #include <random>
 #include <QThread>

@@ -1,10 +1,8 @@
 #ifndef BOUNDINGBOX_H
 #define BOUNDINGBOX_H
 
-#include "ray.h"
+#include "geometry.h"
 #include "intersection.h"
-
-#include "vector3d.h"
 
 class BoundingBox
 {

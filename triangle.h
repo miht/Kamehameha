@@ -5,9 +5,9 @@
 #include <QString>
 #include <iostream>
 
+#include "geometry.h"
 #include "face.h"
 #include "vertex3d.h"
-#include "ray.h"
 #include "material.h"
 #include "intersection.h"
 

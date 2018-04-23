@@ -40,16 +40,16 @@ Model ObjParser::parse(QString absPath, QString filePath)
         }
         else if (sl.value(0) == "v") { //vertex
             Vector3D vertex = Vector3D(sl.value(1).toFloat(),
-                                       -sl.value(2).toFloat(), //negative y value to turn things upside down
-                                       -sl.value(3).toFloat()); //negative z value to compensate for export y-direction in blender
+                                       sl.value(2).toFloat(), //negative y value to turn things upside down
+                                       sl.value(3).toFloat()); //negative z value to compensate for export y-direction in blender
             temp_vertices.push_back(vertex);
         } else if (sl.value(0) == "vt") {
             Vector2D uv = Vector2D(sl.value(1).toFloat(), sl.value(2).toFloat());
             temp_uvs.push_back(uv);
         } else if (sl.value(0) == "vn") {
             Vector3D normal = Vector3D(sl.value(1).toFloat() ,
-                                       -sl.value(2).toFloat(),
-                                       -sl.value(3).toFloat()); //same here, negative
+                                       sl.value(2).toFloat(),
+                                       sl.value(3).toFloat()); //same here, negative
             temp_normals.push_back(normal);
         } else if (sl.value(0) == "usemtl"){
             current_material = sl.value(1);

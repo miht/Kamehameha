@@ -2,7 +2,7 @@
 #define INTERSECTION_H
 #include <QString>
 
-#include "vector3d.h"
+#include "geometry.h"
 
 class Intersection
 {

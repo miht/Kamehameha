@@ -34,47 +34,49 @@ bool Triangle::intersects(Ray ray, float &t0, float &t1, Intersection &intersect
     Vector3D vec2 = vertices[2].position;
 
     Vector3D edge1, edge2, tvec, pvec, qvec;
-        float det,inv_det,u,v;
-        edge1 = vec1 - vec0;
-        edge2 = vec2 - vec0;
+    float det,inv_det,u,v;
+    edge1 = vec1 - vec0;
+    edge2 = vec2 - vec0;
 
-        Vector3D normal = Vector3D::cross_prod (edge1, edge2).normalized();
+    Vector3D normal = Vector3D::cross_prod (edge1, edge2).normalized();
 
-        pvec = Vector3D::cross_prod(ray.direction, edge2); //vec 0
+    pvec = Vector3D::cross_prod(ray.direction, edge2); //vec 0
 
-        det = Vector3D::dot_prod (edge1, pvec); //det
-        if (det < epsilon)
-            return false;
+    det = Vector3D::dot_prod (edge1, pvec); //det
 
-        if (fabs(det) < epsilon) return false;
+    if (det < epsilon)
+        return false;
 
-        inv_det = 1/det; //inv det
+    if (fabs(det) < epsilon) return false;
 
-        tvec = ray.origin - vec0;
-        u = inv_det * Vector3D::dot_prod (tvec, pvec);
-        if (u < 0.0 || u > 1.0) return false;
+    inv_det = 1/det; //inv det
 
-        qvec = Vector3D::cross_prod (tvec, edge1); //qvec
-        v = inv_det * Vector3D::dot_prod (ray.direction, qvec);
-        if (v < 0.0 || u + v > 1.0) return false;
+    tvec = ray.origin - vec0;
+    u = inv_det * Vector3D::dot_prod (tvec, pvec);
+    if (u < 0.0 || u > 1.0) return false;
 
-        float dist = inv_det * Vector3D::dot_prod (edge2, qvec);
-        if(dist <= t0) return false; //distance negative => object is behind ray
-        if(dist > t1) return false; //distance too large => object is too far away
-        t1 = dist;
+    qvec = Vector3D::cross_prod (tvec, edge1); //qvec
+    v = inv_det * Vector3D::dot_prod (ray.direction, qvec);
+    if (v < 0.0 || u + v > 1.0) return false;
 
-        if(smooth) {
-            normal = u * vertices[1].normal.normalized ()+ v*vertices[2].normal.normalized ()+ (1 - u - v)*vertices[0].normal.normalized ();
-            normal = normal.normalized ();
-//            qDebug() << "normal interpolated: " << normal;
-        }
+    float dist = inv_det * Vector3D::dot_prod (edge2, qvec);
+    if(dist <= t0) return false; //distance negative => object is behind ray
+    if(dist > t1) return false; //distance too large => object is too far away
+    t1 = dist;
 
-        intersection = Intersection(ray.pointOnRay (t1), normal, material);
-        intersection.hit = true;
+    if(smooth) {
+        //            normal = vertices[1].normal.normalized();
+        normal = u * vertices[1].normal.normalized () + v*vertices[2].normal.normalized ()+ ((float) 1.0 - u - v)*vertices[0].normal.normalized ();
+        normal = normal.normalized ();
+        //            qDebug() << "normal interpolated: " << normal;
+    }
 
-        //intersection = RayIntersection(ray,shared_from_this(), t, normal,Vector3D(0,0,0));
+    intersection = Intersection(ray.pointOnRay (t1), normal, material);
+    intersection.hit = true;
 
-        return true;
+    //intersection = RayIntersection(ray,shared_from_this(), t, normal,Vector3D(0,0,0));
+
+    return true;
 }
 
 std::ostream & operator<<(std::ostream & Str, const Triangle& t) {

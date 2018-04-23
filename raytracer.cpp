@@ -1,5 +1,4 @@
 #include "raytracer.h"
-#include "math.h"
 
 #include <QThread>
 #include <QProgressBar>
@@ -20,7 +19,6 @@ Color RayTracer::trace(Ray ray, int depth) {
 //    Intersection intersection = findIntersection (ray, t0_0, t1_0);
     Intersection intersection;
     if(scene->model.root->hit(ray, t0_0, t1_0, intersection)) {
-
 
 //    if(intersection.didHit()) {
         Vector3D normal = intersection.normal;
@@ -49,11 +47,12 @@ Color RayTracer::trace(Ray ray, int depth) {
                 cSpec = cSpec + light.intensity*specular*light.color.asVector3D ();
             }
         }
+        Vector3D refl;
         if(m.illModel.reflection) {
-            c = c + 0.5*trace(Ray(intersection.point, Vector3D::reflect (ray.direction, normal).normalized ()), depth - 1).asVector3D ();
+            refl = 0.5*trace(Ray(intersection.point, Vector3D::reflect (ray.direction, normal).normalized ()), depth - 1).asVector3D ();
         }
 
-        c = c + cDiff * m.diffuse + cSpec*m.specular;
+        c = cDiff * m.diffuse + cSpec*m.specular + refl;
         return Color(c);
     }
     else {

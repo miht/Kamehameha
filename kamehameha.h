@@ -68,6 +68,12 @@ private slots:
 
     void on_rb_persp_clicked();
 
+    void on_lineEdit_2_editingFinished();
+
+    void on_lineEdit_3_editingFinished();
+
+    void on_lineEdit_editingFinished();
+
 private:
     Ui::MainWindow *ui;
     QPushButton *ui_renderButton;

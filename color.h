@@ -2,7 +2,7 @@
 #define COLOR_H
 
 #include <QColor>
-#include "vector3d.h"
+#include "geometry.h"
 
 class Color
 {

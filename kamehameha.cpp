@@ -33,18 +33,20 @@ Kamehameha::Kamehameha(QWidget *parent) :
 
     scene = new Scene(0.2, Color(1,1,1));
     scene->camera.mode = Camera::perspective;
-    scene->camera.setPosition (Vector3D(0,0,-5));
-    scene->camera.lookAt(Vector3D(0,0,0));
+//    scene->camera.position = Vector3D(0,0,-5);
+//    scene->camera.camToWorld.translate(Vector3D(0,5,0));
+    scene->camera.imageWidth = graphicsView->width ();
+    scene->camera.imageHeight = graphicsView->height();
 
     // configure progress bar
     ui_renderProgressBar->setMinimum(0);
-    ui_renderProgressBar->setMaximum(scene->camera.viewportWidth * scene->camera.viewportHeight);
+    ui_renderProgressBar->setMaximum(scene->camera.imageWidth * scene->camera.imageHeight);
 
     //hide the cancel button
     ui_cancelButton->setVisible(false);
 
-    ui_widthField->setText (QString::number(scene->camera.viewportWidth));
-    ui_heightField->setText (QString::number(scene->camera.viewportHeight));
+    ui_widthField->setText (QString::number(scene->camera.imageWidth));
+    ui_heightField->setText (QString::number(scene->camera.imageHeight));
 
     //set to path rendering mode at the start
     ui->radioButton->click();
@@ -53,8 +55,8 @@ Kamehameha::Kamehameha(QWidget *parent) :
 
 //    scene->lights.push_back(Light(Vector3D(0,0,0), 1, Color(1, 1, 1)));
 
-//    scene->lights.push_back(Light(Vector3D(1.5, 1.5, 0.5), 0.3, Color(1, 1, 1)));
-//    scene->lights.push_back(Light(Vector3D(-0.5, -0.5, -2.5), 0.6, Color(1,1,1)));
+    scene->lights.push_back(Light(Vector3D(1.5, 1.5, -0.5), 0.3, Color(1, 1, 1)));
+    scene->lights.push_back(Light(Vector3D(-0.5, -0.5, 2.5), 0.6, Color(1,1,1)));
 
     //Initialize the watcher
     watcher = new QFutureWatcher<QImage>();
@@ -70,7 +72,7 @@ void Kamehameha::on_renderButton_clicked()
             state = rendering;
         }
         else {
-            if(scene->model.root->faces.size() > 0) {
+            if(scene->model.root != NULL) {
                 //show the cancel button
                 ui_cancelButton->setVisible(true);
 
@@ -105,8 +107,8 @@ void Kamehameha::on_cancelButton_clicked()
  */
 void Kamehameha::processImage(int index) {
     QImage img = watcher->resultAt(index);
-    float scaleX = graphicsView->width () / scene->camera.viewportWidth;
-    float scaleY = graphicsView->height () / scene->camera.viewportHeight;
+    float scaleX = graphicsView->width () / scene->camera.imageWidth;
+    float scaleY = graphicsView->height () / scene->camera.imageHeight;
 
     float offsetX = img.offset().x() * scaleX;
     float offsetY = img.offset().y() * scaleY;
@@ -125,11 +127,28 @@ void Kamehameha::processImage(int index) {
 void Kamehameha::startRender() {
     QList<QImage> images; //the qtconcurrentmap will be applied to this list
 
+    //Attempt to parse numbers
     bool ok = true;
     int w = ui_widthField->text ().toInt (&ok, 10);
     int h = ui_heightField->text ().toInt (&ok, 10);
-    scene->camera.viewportWidth = w;
-    scene->camera.viewportHeight = h;
+    scene->camera.imageWidth = w;
+    scene->camera.imageHeight = h;
+
+    float camTranslateX = ui->lineEdit_posX->text().toFloat (&ok);
+    float camTranslateY = ui->lineEdit_posY->text().toFloat (&ok);
+    float camTranslateZ = ui->lineEdit_posZ->text().toFloat (&ok);
+
+    float camRotateX = ui->lineEdit_rotX->text().toFloat (&ok);
+    float camRotateY = ui->lineEdit_rotY->text().toFloat (&ok);
+    float camRotateZ = ui->lineEdit_rotZ->text().toFloat (&ok);
+
+    Matrix4x4 translation = Matrix4x4::translation (Vector3D(camTranslateX,
+                                                             camTranslateY,
+                                                             camTranslateZ));
+    Matrix4x4 rotation = Matrix4x4::rotation (Vector3D(camRotateX * M_PI/180,
+                                                       camRotateY * M_PI/180,
+                                                       camRotateZ * M_PI/180));
+    scene->camera.camToWorld = translation * rotation;
 
     switch(renderer->mode) {
     case Renderer::Pathtracer:
@@ -141,9 +160,9 @@ void Kamehameha::startRender() {
         pt->globalIllumination = ui->checkbox_global_illu->checkState () == Qt::Checked;
         pt->antiAliasing = ui->checkbox_anti_alias->checkState () == Qt::Checked;
 
-        for(int i = 0; i < scene->camera.viewportWidth; i+= scene->camera.viewportWidth/subdivisions) {
-            for(int j = 0; j < scene->camera.viewportHeight; j += scene->camera.viewportHeight/subdivisions) {
-                QImage img = QImage(scene->camera.viewportWidth/subdivisions, scene->camera.viewportHeight/subdivisions, QImage::Format_RGB32);
+        for(int i = 0; i < scene->camera.imageWidth; i+= scene->camera.imageWidth/subdivisions) {
+            for(int j = 0; j < scene->camera.imageHeight; j += scene->camera.imageHeight/subdivisions) {
+                QImage img = QImage(scene->camera.imageWidth/subdivisions, scene->camera.imageHeight/subdivisions, QImage::Format_RGB32);
                 img.setOffset(QPoint(i, j));
                 images << img;
             }
@@ -164,9 +183,9 @@ void Kamehameha::startRender() {
         rt->depth = ui->slider_depth->value ();
         rt->antiAliasing = ui->checkbox_anti_alias->checkState () == Qt::Checked;
 
-        for(int i = 0; i < scene->camera.viewportWidth; i+= scene->camera.viewportWidth/subdivisions) {
-            for(int j = 0; j < scene->camera.viewportHeight; j += scene->camera.viewportHeight/subdivisions) {
-                QImage img = QImage(scene->camera.viewportWidth/subdivisions, scene->camera.viewportHeight/subdivisions, QImage::Format_RGB32);
+        for(int i = 0; i < scene->camera.imageWidth; i+= scene->camera.imageWidth/subdivisions) {
+            for(int j = 0; j < scene->camera.imageHeight; j += scene->camera.imageHeight/subdivisions) {
+                QImage img = QImage(scene->camera.imageWidth/subdivisions, scene->camera.imageHeight/subdivisions, QImage::Format_RGB32);
                 img.setOffset(QPoint(i, j));
                 images << img;
             }
@@ -189,7 +208,7 @@ void Kamehameha::startRender() {
     case Renderer::Wireframer:
     {
         Wireframer* wf = dynamic_cast<Wireframer*>(renderer);
-        QImage image(graphicsView->width (), graphicsView->height (), QImage::Format_ARGB32);
+        QImage image(scene->camera.imageWidth, scene->camera.imageHeight, QImage::Format_ARGB32);
 
         graphicsScene->addPixmap (QPixmap::fromImage(wf->generate (ui_renderProgressBar, image)));
         break;
@@ -271,14 +290,14 @@ void Kamehameha::on_lineEdit_camWidth_editingFinished()
 {
 //    bool ok = true;
 //    int w = ui_widthField->text ().toInt (&ok, 10);
-//    scene->camera.viewportWidth = w;
+//    scene->camera.imageWidth = w;
 }
 
 void Kamehameha::on_lineEdit_camHeight_editingFinished()
 {
 //    bool ok = true;
 //    int h = ui_heightField->text ().toInt (&ok, 10);
-//   scene->camera.viewportHeight = h;
+//   scene->camera.imageHeight = h;
 }
 
 int Kamehameha::showMessageDialog(QString title, QString message) {
@@ -296,4 +315,20 @@ void Kamehameha::on_rb_ortho_clicked()
 void Kamehameha::on_rb_persp_clicked()
 {
     scene->camera.mode = Camera::perspective;
+}
+
+//X
+void Kamehameha::on_lineEdit_2_editingFinished()
+{
+
+}
+//Y
+
+void Kamehameha::on_lineEdit_3_editingFinished()
+{
+
+}
+//Z
+void Kamehameha::on_lineEdit_editingFinished()
+{
 }

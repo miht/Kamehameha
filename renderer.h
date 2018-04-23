@@ -7,7 +7,7 @@
 #include <QPainter>
 
 #include "scene.h"
-#include "vector3d.h"
+#include "geometry.h"
 
 class Renderer
 {

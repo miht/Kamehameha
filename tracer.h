@@ -12,11 +12,10 @@
 
 #include "renderer.h"
 #include "objparser.h"
-#include "vector3d.h"
+#include "geometry.h"
 #include "color.h"
 #include "model.h"
 #include "light.h"
-#include "ray.h"
 #include "intersection.h"
 
 class Tracer : public Renderer

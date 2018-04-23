@@ -13,13 +13,22 @@ QImage Wireframer::generate(QProgressBar *progress, QImage image) {
     painter.fillRect (0,0,image.width (), image.height (), Qt::white);
     painter.setPen (Qt::black);
 
+    float width = scene->camera.imageWidth;
+    float height = scene->camera.imageHeight;
+    float fov = scene->camera.angleOfView;
+    float imageAspectRatio = width / height;
+    float scale = tanf(fov * 0.5 * M_PI/180);
+
     // Iterate over all pixels in image
     for(Object object : scene->model.objects) {
         for(Face* face : object.faces) {
             QPointF* qPoints = new QPointF[face->getPoints ().size ()];
             for(size_t i = 0; i < face->getPoints ().size (); i++) {
                 Vector3D screenCoords = worldToScreenCoordinates (face->getPoints ()[i]);
-                qPoints[i] =  QPointF(screenCoords.x, screenCoords.y);
+//                qPoints[i] =  QPointF(screenCoords.x, screenCoords.y);
+                float x = (width*(face->getPoints()[i].x*(imageAspectRatio * scale) + 1)/2) - 0.5;
+                float y  = height*(1 - face->getPoints()[i].y/scale)/2 - 0.5;
+                qPoints[i] = QPointF(x, y);
             }
 
             if(face->type == Face::triangle) {
@@ -27,24 +36,25 @@ QImage Wireframer::generate(QProgressBar *progress, QImage image) {
                 painter.setPen (Qt::black);
                 painter.drawPolygon (qPoints, 3, Qt::OddEvenFill);
 
-                painter.setPen (Qt::green);
+//                painter.setPen (Qt::green);
                 //Test drawing the normals of the face
-                for(Vertex3D v : face->getVertices ()) {
-                    Vector3D sc = worldToScreenCoordinates (v.position);
-                    Vector3D sc2 = worldToScreenCoordinates (v.position + 0.05 * v.normal.normalized ());
-                    painter.drawLine(sc.x, sc.y, sc2.x, sc2.y);
-                }
-                //Draw normals of faces
-                painter.setPen (Qt::red);
-                Vector3D midPoint = 0.33333 * (face->getVertices()[0].position +
-                        face->getVertices()[1].position + face->getVertices()[2].position);
-                Vector3D midPoint_screen = worldToScreenCoordinates (midPoint);
+//                for(Vertex3D v : face->getVertices ()) {
+//                    Vector3D sc = worldToScreenCoordinates (v.position);
+//                    Vector3D sc2 = worldToScreenCoordinates (v.position + 0.05 * v.normal.normalized ());
 
-                Vector3D e1 = face->getVertices ()[1].position - face->getVertices()[0].position;
-                Vector3D e2 = face->getVertices ()[2].position - face->getVertices ()[0].position;
-                Vector3D midPoint_screen2 = worldToScreenCoordinates (midPoint
-                                                                     + 0.05 * Vector3D::cross_prod (e1, e2).normalized ());
-                painter.drawLine(midPoint_screen.x, midPoint_screen.y, midPoint_screen2.x, midPoint_screen2.y);
+//                    painter.drawLine(sc.x, sc.y, sc2.x, sc2.y);
+//                }
+//                //Draw normals of faces
+//                painter.setPen (Qt::red);
+//                Vector3D midPoint = 0.33333 * (face->getVertices()[0].position +
+//                        face->getVertices()[1].position + face->getVertices()[2].position);
+//                Vector3D midPoint_screen = worldToScreenCoordinates (midPoint);
+
+//                Vector3D e1 = face->getVertices ()[1].position - face->getVertices()[0].position;
+//                Vector3D e2 = face->getVertices ()[2].position - face->getVertices ()[0].position;
+//                Vector3D midPoint_screen2 = worldToScreenCoordinates (midPoint
+//                                                                     + 0.05 * Vector3D::cross_prod (e1, e2).normalized ());
+//                painter.drawLine(midPoint_screen.x, midPoint_screen.y, midPoint_screen2.x, midPoint_screen2.y);
 
             }
 

@@ -29,7 +29,6 @@ SOURCES += \
     vector3d.cpp \
     vertex3d.cpp \
     objparser.cpp \
-    vector2d.cpp \
     material.cpp \
     ray.cpp \
     triangle.cpp \
@@ -50,17 +49,15 @@ SOURCES += \
     pathtracer.cpp \
     camera.cpp \
     mathops.cpp \
-    matrix3d.cpp \
     tracer.cpp \
-    kdnode.cpp
+    kdnode.cpp \
+    geometry.cpp \
+    transform.cpp
 
 HEADERS += \
-    vector3d.h \
     vertex3d.h \
     objparser.h \
-    vector2d.h \
     material.h \
-    ray.h \
     triangle.h \
     kamehameha.h \
     raytracer.h \
@@ -79,9 +76,10 @@ HEADERS += \
     pathtracer.h \
     camera.h \
     mathops.h \
-    matrix3d.h \
     tracer.h \
-    kdnode.h
+    kdnode.h \
+    geometry.h \
+    transform.h
 
 FORMS += \
         mainwindow.ui

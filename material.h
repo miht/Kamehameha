@@ -1,7 +1,7 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "vector3d.h"
+#include "geometry.h"
 #include "illuminationmodel.h"
 
 class Material
