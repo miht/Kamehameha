@@ -7,8 +7,16 @@
 class Material
 {
 public:
-    Vector3D ambient, diffuse, specular, emissive;
-    float spec_exp, dissolved, optical_density;
+    enum Type {
+        Lambertian,
+        Phong,
+        Blinn_Phong
+    };
+
+    Type type = Lambertian;
+
+    Vector3D ambient, diffuse, specular, emissive, reflective;
+    float spec_exp, dissolved, optical_density, reflectiveFactor;
     IlluminationModel illModel;
 
     Material();

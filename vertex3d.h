@@ -9,7 +9,8 @@ class Vertex3D
 {
 public:
     Vector3D position, normal;
-    Vertex3D(Vector3D position, Vector3D normal);
+    Vector2D uv;
+    Vertex3D(Vector3D position, Vector3D normal, Vector2D uv);
 
     friend std::ostream& operator<<(std::ostream& Str, const Vertex3D& v);
     friend QDebug operator<< (QDebug d, const Vertex3D &v);

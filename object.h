@@ -4,7 +4,7 @@
 #include <QString>
 
 #include "boundingbox.h"
-#include "triangle.h"
+#include "face.h"
 
 class Object
 {

@@ -17,6 +17,7 @@ public:
     float window[4] = {0,0,0,0};
     float filmGateAspectRatio = 4/3;
     float resGateAspectRatio = 4/3;
+    float focalLength = 35;
     float depth = 3;
     Matrix4x4 camToWorld;
 

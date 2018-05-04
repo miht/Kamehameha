@@ -3,7 +3,7 @@
 #include <iostream>
 #include "kamehameha.h"
 #include "model.h"
-#include "triangle.h"
+#include "face.h"
 #include "objparser.h"
 
 int main(int argc, char *argv[])

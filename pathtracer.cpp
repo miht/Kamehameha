@@ -41,6 +41,7 @@ Color PathTracer::trace(Ray ray, int depth) {
                 //diffuse
                 float diffuse = Vector3D::dot_prod (ray_towards_light.direction.normalized (), intersection.normal);
                 diffuse = fmax(0, diffuse);
+
                 cDiff = cDiff + light.intensity*diffuse*light.color.asVector3D ();
 
 //                //specular

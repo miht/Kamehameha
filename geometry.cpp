@@ -7,6 +7,16 @@ Vector2D::Vector2D(float x, float y)
 
 Vector2D::Vector2D()
 {
+    x = 0;
+    y = 0;
+}
+
+std::ostream & operator<<(std::ostream & Str, const Vector2D& v) {
+    return Str << "(" << v.x << ", " << v.y << ")\n";
+}
+
+QDebug operator<<(QDebug d, const Vector2D &v) {
+    return d << "(" << v.x << ", " << v.y << ")\n";
 }
 
 Vector3D::Vector3D(float x, float y, float z)
@@ -140,10 +150,10 @@ Matrix4x4 Matrix4x4::rotation(const Vector3D v) {
     ty(2, 2) = cosf(v.y);
 
     Matrix4x4 tz = Matrix4x4::identity();
-    tx(0, 0) = cosf(v.z);
-    tx(0, 1) = -sinf(v.z);
-    tx(1, 0) = sinf(v.z);
-    tx(1, 1) = cosf(v.z);
+    tz(0, 0) = cosf(v.z);
+    tz(0, 1) = -sinf(v.z);
+    tz(1, 0) = sinf(v.z);
+    tz(1, 1) = cosf(v.z);
 
     return tx * ty * tz;
 }

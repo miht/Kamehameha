@@ -31,10 +31,8 @@ Kamehameha::Kamehameha(QWidget *parent) :
     graphicsView = ui->graphicsView;
     graphicsView->setSceneRect (0,0,graphicsView->width(), graphicsView->height ());
 
-    scene = new Scene(0.2, Color(1,1,1));
+    scene = new Scene(0.5, Color(1,1,1));
     scene->camera.mode = Camera::perspective;
-//    scene->camera.position = Vector3D(0,0,-5);
-//    scene->camera.camToWorld.translate(Vector3D(0,5,0));
     scene->camera.imageWidth = graphicsView->width ();
     scene->camera.imageHeight = graphicsView->height();
 
@@ -55,8 +53,8 @@ Kamehameha::Kamehameha(QWidget *parent) :
 
 //    scene->lights.push_back(Light(Vector3D(0,0,0), 1, Color(1, 1, 1)));
 
-    scene->lights.push_back(Light(Vector3D(1.5, 1.5, -0.5), 0.3, Color(1, 1, 1)));
-    scene->lights.push_back(Light(Vector3D(-0.5, -0.5, 2.5), 0.6, Color(1,1,1)));
+//    scene->lights.push_back(Light(Vector3D(1.5, 1.5, -0.5), 0.3, Color(1, 1, 1)));
+//    scene->lights.push_back(Light(Vector3D(-0.5, -0.5, 2.5), 0.6, Color(1,1,1)));
 
     //Initialize the watcher
     watcher = new QFutureWatcher<QImage>();
@@ -127,28 +125,7 @@ void Kamehameha::processImage(int index) {
 void Kamehameha::startRender() {
     QList<QImage> images; //the qtconcurrentmap will be applied to this list
 
-    //Attempt to parse numbers
-    bool ok = true;
-    int w = ui_widthField->text ().toInt (&ok, 10);
-    int h = ui_heightField->text ().toInt (&ok, 10);
-    scene->camera.imageWidth = w;
-    scene->camera.imageHeight = h;
-
-    float camTranslateX = ui->lineEdit_posX->text().toFloat (&ok);
-    float camTranslateY = ui->lineEdit_posY->text().toFloat (&ok);
-    float camTranslateZ = ui->lineEdit_posZ->text().toFloat (&ok);
-
-    float camRotateX = ui->lineEdit_rotX->text().toFloat (&ok);
-    float camRotateY = ui->lineEdit_rotY->text().toFloat (&ok);
-    float camRotateZ = ui->lineEdit_rotZ->text().toFloat (&ok);
-
-    Matrix4x4 translation = Matrix4x4::translation (Vector3D(camTranslateX,
-                                                             camTranslateY,
-                                                             camTranslateZ));
-    Matrix4x4 rotation = Matrix4x4::rotation (Vector3D(camRotateX * M_PI/180,
-                                                       camRotateY * M_PI/180,
-                                                       camRotateZ * M_PI/180));
-    scene->camera.camToWorld = translation * rotation;
+    applySettings();
 
     switch(renderer->mode) {
     case Renderer::Pathtracer:
@@ -255,7 +232,7 @@ void Kamehameha::on_toolButton_clicked()
     QString dir;
 
     file = QFileDialog::getOpenFileName(this,
-                                        tr("Load Model"), path, tr("Model Files (*.obj)"));
+                                        tr("Load Scene"), path, tr("Scenes (*.fbx)"));
 
     if(file == "")
         return;
@@ -264,7 +241,12 @@ void Kamehameha::on_toolButton_clicked()
     file = info.absoluteFilePath ();
     dir = info.absolutePath () + "/";
 
-    scene->model = ObjParser::parse(dir, file);
+//    scene->model = ObjParser::parse(dir, file);
+//    scene->model = importModel (file);
+    bool imported = importModel (file, scene->model);
+
+//    ui->lbl_edges->setText ("" + 0);
+//    ui->lbl_faces->setText("" + scene->model.root->faces.size());
 }
 
 //Path
@@ -317,18 +299,123 @@ void Kamehameha::on_rb_persp_clicked()
     scene->camera.mode = Camera::perspective;
 }
 
-//X
-void Kamehameha::on_lineEdit_2_editingFinished()
-{
+void Kamehameha::applySettings() {
+    //Attempt to parse numbers
+    bool ok = true;
 
-}
-//Y
+    int w = ui_widthField->text ().toInt (&ok, 10);
+    int h = ui_heightField->text ().toInt (&ok, 10);
+    scene->camera.imageWidth = w;
+    scene->camera.imageHeight = h;
+    scene->camera.angleOfView = ui->lineEdit_fov->text ().toInt(&ok, 10);
+    bool intensity = ((float)ui->Slider_intensity->value() / (float)ui->Slider_intensity->maximum ());
 
-void Kamehameha::on_lineEdit_3_editingFinished()
-{
+    float camTranslateX = ui->lineEdit_posX->text().toFloat (&ok);
+    float camTranslateY = ui->lineEdit_posY->text().toFloat (&ok);
+    float camTranslateZ = ui->lineEdit_posZ->text().toFloat (&ok);
 
+    float camRotateX = ui->lineEdit_rotX->text().toFloat (&ok);
+    float camRotateY = ui->lineEdit_rotY->text().toFloat (&ok);
+    float camRotateZ = ui->lineEdit_rotZ->text().toFloat (&ok);
+
+    for(Light l : scene->lights) {
+        l.intensity = intensity;
+    }
+
+    Matrix4x4 translation = Matrix4x4::translation (Vector3D(camTranslateX,
+                                                             camTranslateY,
+                                                             camTranslateZ));
+
+    Matrix4x4 rotation = Matrix4x4::rotation (Vector3D(camRotateX * M_PI/180,
+                                                       camRotateY * M_PI/180,
+                                                       camRotateZ * M_PI/180));
+    qDebug() << rotation;
+
+    scene->camera.camToWorld = translation * rotation;
 }
-//Z
-void Kamehameha::on_lineEdit_editingFinished()
+
+void Kamehameha::on_btn_changeColor_clicked()
 {
+    QColor color = QColorDialog::getColor (QColor(255,255,255), this, "Light color");
+    QPalette pal = palette();
+
+    // set black background
+    pal.setColor(QPalette::Background, color);
+    ui->btn_lightColor->setAutoFillBackground(true);
+    ui->btn_lightColor->setPalette (pal);
 }
+
+bool Kamehameha::importModel(const QString path, Model &model) {
+    qDebug() << "Attempting to import FBX\n";
+
+    // Create the FBX SDK manager
+    FbxManager* lSdkManager = FbxManager::Create();
+
+    // Create an IOSettings object.
+    FbxIOSettings * ios = FbxIOSettings::Create(lSdkManager, IOSROOT );
+    lSdkManager->SetIOSettings(ios);
+
+    // ... Configure the FbxIOSettings object ...
+
+    // Create an importer.
+    FbxImporter* lImporter = FbxImporter::Create(lSdkManager, "");
+
+    // Declare the path and filename of the file containing the scene.
+    // In this case, we are assuming the file is in the same directory as the executable.
+    const char* lFilename = path.toLatin1();
+
+    qDebug() << lFilename;
+
+    // Initialize the importer.
+    bool lImportStatus = lImporter->Initialize(lFilename, -1, lSdkManager->GetIOSettings());
+
+    if(lImportStatus == false) {
+        printf("Call to FbxImporter::Initialize() failed.\n");
+        printf("Error returned: %s\n\n", lImporter->GetStatus().GetErrorString());
+        showMessageDialog ("Error", QString(lImporter->GetStatus().GetErrorString()));
+        return false;
+    }
+
+    // Create a new scene so it can be populated by the imported file.
+    FbxScene* lScene = FbxScene::Create(lSdkManager,"Scene");
+
+    // Import the contents of the file into the scene.
+    lImporter->Import(lScene);
+
+    // The file has been imported; we can get rid of the importer.
+    lImporter->Destroy();
+
+    //triangulate scene
+    FbxGeometryConverter conv(lSdkManager);
+    conv.Triangulate (lScene, true);
+
+    FbxNode* root = lScene->GetRootNode ();
+    std::vector<Face*> faces;
+    std::vector<Light> lights;
+    std::vector<Material> materials;
+
+    FbxParser::process(root, faces, lights, scene->model.materials);
+
+//    FbxParser::processMaterials (root, materials);
+
+    scene->model.root = new KDNode();
+    scene->model.root = scene->model.root->build(faces, 0);
+    scene->lights = lights;
+//    FbxMesh*mesh = root->GetMesh ();
+
+
+//    model.numberOfFaces = mesh->GetPolygonCount ();
+//    model.numberOfVertices = mesh->GetPolygonVertexCount ();
+
+//    qDebug() << "Test 2";
+
+//    //Create the triangles. TODO: transition entirely to using FBX polygons instead of our native geometry?
+//    std::vector<Face*> faces;
+
+//    qDebug() << "Test 3";
+
+
+
+    return true;
+}
+

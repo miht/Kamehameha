@@ -23,6 +23,8 @@ class Tracer : public Renderer
 public:
     int depth = 2;
     bool antiAliasing = false;
+    bool directLighting = true;
+    bool indirectLighting = false;
 
     Tracer(Scene *scene);
     QImage generate(QProgressBar *progress, QImage image) override;

@@ -12,6 +12,9 @@ public:
     float x, y;
     Vector2D();
     Vector2D(float x, float y);
+
+    friend std::ostream& operator<<(std::ostream& Str, const Vector2D& v);
+    friend QDebug operator<< (QDebug d, const Vector2D &v);
 };
 
 class Vector3D

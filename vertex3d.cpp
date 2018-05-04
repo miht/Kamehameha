@@ -1,7 +1,7 @@
 #include "vertex3d.h"
 
-Vertex3D::Vertex3D(Vector3D position, Vector3D normal)
-    :   position(position), normal(normal)
+Vertex3D::Vertex3D(Vector3D position, Vector3D normal, Vector2D uv)
+    :   position(position), normal(normal), uv(uv)
 {
 
 }

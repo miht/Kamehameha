@@ -8,11 +8,11 @@ class Intersection
 {
 public:
     Vector3D point, normal;
-    QString material;
+    const char* material;
     bool hit = false;
 
     Intersection();
-    Intersection(Vector3D point, Vector3D normal, QString material);
+    Intersection(Vector3D point, Vector3D normal, const char* material);
 
     bool didHit();
 };

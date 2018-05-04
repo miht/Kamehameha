@@ -38,7 +38,9 @@ Color RayTracer::trace(Ray ray, int depth) {
                 //diffuse
                 float diffuse = Vector3D::dot_prod (ray_towards_light.direction.normalized (), normal);
                 diffuse = fmax(0, diffuse);
+
                 cDiff = cDiff + light.intensity*diffuse*light.color.asVector3D ();
+//                qDebug() << diffuse;
 
                 //specular
                 Vector3D bisector = (-1*ray.direction.normalized ()+ ray_towards_light.direction.normalized ()).normalized();
@@ -48,8 +50,9 @@ Color RayTracer::trace(Ray ray, int depth) {
             }
         }
         Vector3D refl;
-        if(m.illModel.reflection) {
-            refl = 0.5*trace(Ray(intersection.point, Vector3D::reflect (ray.direction, normal).normalized ()), depth - 1).asVector3D ();
+        if(m.reflectiveFactor > 0.05) { // TODO WHAT THRESHOLD HERE?
+            qDebug() << m.reflectiveFactor;
+            refl = m.reflectiveFactor*trace(Ray(intersection.point, Vector3D::reflect (ray.direction, normal).normalized ()), depth - 1).asVector3D ();
         }
 
         c = cDiff * m.diffuse + cSpec*m.specular + refl;

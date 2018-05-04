@@ -20,6 +20,12 @@
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QMessageBox>
+#include <QColorDialog>
+
+#include "fbxsdk.h"
+#include "fbxsdk/scene/fbxscene.h"
+#include "fbxsdk/core/fbxmanager.h"
+#include "fbxsdk/fileio/fbximporter.h"
 
 #include <QFutureWatcher>
 
@@ -28,6 +34,8 @@
 #include "pathtracer.h"
 #include "wireframer.h"
 #include "scene.h"
+#include "fbxparser.h"
+#include "kdnode.h"
 
 namespace Ui {
 class MainWindow;
@@ -68,11 +76,9 @@ private slots:
 
     void on_rb_persp_clicked();
 
-    void on_lineEdit_2_editingFinished();
+    void applySettings();
 
-    void on_lineEdit_3_editingFinished();
-
-    void on_lineEdit_editingFinished();
+    void on_btn_changeColor_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -95,6 +101,8 @@ private:
 
     enum State {rendering, paused, cancelled};
     State state = cancelled;
+
+    bool importModel(const QString path, Model &model);
 
     void startRender();
     void cancelRender();
