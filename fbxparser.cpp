@@ -75,7 +75,6 @@ void FbxParser::processMesh(const FbxMesh *mesh, std::vector<Face*> &faces) {
 
             int materialIndex = mesh->GetElementMaterial()->GetIndexArray ().GetAt(i);
             const char* mat = mesh->GetNode ()->GetMaterial(materialIndex)->GetName();
-            qDebug() << mat;
 //            qDebug() << "hehe " << mat;
 
             faces.push_back (new Triangle(v1, v2, v3, mat));
@@ -117,7 +116,7 @@ void FbxParser::processMaterials(FbxMesh *mesh, QMap<const char*, Material> &mat
         materialIndex = i;
 
         FbxDouble3 ambient, diffuse, emissive, specular, reflective, transparent;
-        FbxDouble ambientFactor, diffuseFactor, emissiveFactor, reflectiveFactor, transparentFactor;
+        FbxDouble ambientFactor, diffuseFactor, emissiveFactor, reflectiveFactor, transparentFactor, specularFactor;
 
         if(lMaterial->GetClassId().Is(FbxSurfaceLambert::ClassId) )
         {
@@ -147,6 +146,7 @@ void FbxParser::processMaterials(FbxMesh *mesh, QMap<const char*, Material> &mat
                 reflectiveFactor = phong->ReflectionFactor.Get();
 
                 specular = phong->Specular;
+                specularFactor = phong->SpecularFactor;
 
                 FbxDouble shiny = phong->Shininess.Get ();
                 m.spec_exp = 10*shiny; //because FBX requires multiplied by 10?
@@ -158,20 +158,20 @@ void FbxParser::processMaterials(FbxMesh *mesh, QMap<const char*, Material> &mat
         qDebug() << lMaterial->GetName ();
         qDebug() << materialIndex;
 
-        m.ambient = Vector3D(ambient[0], ambient[1], ambient[2]);
+        m.ambient = Vector3D(ambient[0], ambient[1], ambient[2]) * (float) ambientFactor;
         qDebug() << "Ambient " << m.ambient;
 
-        m.diffuse = Vector3D(diffuse[0], diffuse[1], diffuse[2]);// * (float)diffuseFactor;
+        m.diffuse = Vector3D(diffuse[0], diffuse[1], diffuse[2]) * (float)diffuseFactor;
         qDebug() << "Diffuse " << m.diffuse;
 
-        m.specular = Vector3D(specular[0], specular[1], specular[2]);
+        m.specular = Vector3D(specular[0], specular[1], specular[2]) * (float) specularFactor;
         qDebug() << "Specular " << m.specular;
 
-        m.emissive = Vector3D(emissive[0], emissive[1], emissive[2]);// * (float)emissiveFactor;
+        m.emissive = Vector3D(emissive[0], emissive[1], emissive[2]) * (float)emissiveFactor;
         //TODO m.transparency = transparency;
         qDebug() << "Emissive " << m.emissive;
 
-        m.reflective = Vector3D(reflective[0], reflective[1], reflective[2]);
+        m.reflective = Vector3D(reflective[0], reflective[1], reflective[2]) * (float) reflectiveFactor;
         qDebug() << "Reflective " << m.reflective;
         qDebug() << "Reflective factor " << reflectiveFactor;
         m.reflectiveFactor = reflectiveFactor;

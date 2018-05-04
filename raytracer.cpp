@@ -50,8 +50,7 @@ Color RayTracer::trace(Ray ray, int depth) {
             }
         }
         Vector3D refl;
-        if(m.reflectiveFactor > 0.05) { // TODO WHAT THRESHOLD HERE?
-            qDebug() << m.reflectiveFactor;
+        if(m.reflective.norm() > 0.05) { // TODO WHAT THRESHOLD HERE?
             refl = m.reflectiveFactor*trace(Ray(intersection.point, Vector3D::reflect (ray.direction, normal).normalized ()), depth - 1).asVector3D ();
         }
 
