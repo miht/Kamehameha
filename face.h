@@ -17,6 +17,8 @@ public:
     Geometry type;
     Face(const char *material);
 
+    const char* material;
+
     Vector3D midpoint;
     BoundingBox bbox;
 
@@ -26,7 +28,6 @@ public:
 
 protected:
     std::vector<Vertex3D> vertices;
-    const char* material;
 };
 
 class Triangle : public Face

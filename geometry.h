@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <iostream>
 
+#include <algorithm>
 #include "math.h"
 
 class Vector2D
@@ -12,6 +13,13 @@ public:
     float x, y;
     Vector2D();
     Vector2D(float x, float y);
+
+    Vector2D operator+(const Vector2D v) const;
+    Vector2D operator-(const Vector2D v) const;
+    Vector2D operator-() const;
+    Vector2D operator*(const Vector2D v) const;
+    Vector2D operator*(const float s) const;
+    Vector2D operator/(const float d) const;
 
     friend std::ostream& operator<<(std::ostream& Str, const Vector2D& v);
     friend QDebug operator<< (QDebug d, const Vector2D &v);
@@ -51,6 +59,9 @@ public:
 //commutativity
 Vector3D operator*(const float s, const Vector3D v);
 
+//Vector interpolation
+void interpolate(const Vector2D a, const Vector2D b, std::vector<Vector2D> &result);
+
 class Matrix4x4
 {
 public:
@@ -60,6 +71,7 @@ public:
     static Matrix4x4 identity();
     static Matrix4x4 translation(const Vector3D v);
     static Matrix4x4 rotation(const Vector3D v);
+    static bool inverse(Matrix4x4 mat, Matrix4x4 &out);
 
     float& operator()(const int i, const int j);
 

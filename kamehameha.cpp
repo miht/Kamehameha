@@ -168,7 +168,6 @@ void Kamehameha::startRender() {
             }
         }
 
-
         std::function<QImage(const QImage&)> rendered = [this,rt](const QImage &image) -> QImage
         {
             return rt->generate(this->ui_renderProgressBar, image);
@@ -180,14 +179,25 @@ void Kamehameha::startRender() {
     }
     case Renderer::Rasterizer:
     {
+        Rasterizer* r = dynamic_cast<Rasterizer*>(renderer);
+        QImage image(scene->camera.imageWidth, scene->camera.imageHeight, QImage::Format_ARGB32);
+
+        float scaleX = graphicsView->width () / scene->camera.imageWidth;
+        float scaleY = graphicsView->height () / scene->camera.imageHeight;
+
+        graphicsScene->addPixmap (QPixmap::fromImage(r->generate (ui_renderProgressBar, image).scaled (scaleX * image.width (), scaleY * image.height ())));
+
         break;
     }
     case Renderer::Wireframer:
     {
         Wireframer* wf = dynamic_cast<Wireframer*>(renderer);
         QImage image(scene->camera.imageWidth, scene->camera.imageHeight, QImage::Format_ARGB32);
+        float scaleX = graphicsView->width () / scene->camera.imageWidth;
+        float scaleY = graphicsView->height () / scene->camera.imageHeight;
 
-        graphicsScene->addPixmap (QPixmap::fromImage(wf->generate (ui_renderProgressBar, image)));
+        graphicsScene->addPixmap (QPixmap::fromImage(wf->generate (ui_renderProgressBar, image).scaled (scaleX * image.width (), scaleY * image.height ())));
+
         break;
     }
     default:
@@ -245,6 +255,9 @@ void Kamehameha::on_toolButton_clicked()
 //    scene->model = importModel (file);
     bool imported = importModel (file, scene->model);
 
+//    ui->btn_lightColor->setIcon (getColoredIcon (100, 100, Color((scene->ambient_color.asVector3D ()*scene->ambient_intensity)).asQColor ());
+//    ui->btn_lightColor_bkground->setIcon (getColoredIcon (100, 100, scene->ambient_color*scene->ambient_intensity));
+
 //    ui->lbl_edges->setText ("" + 0);
 //    ui->lbl_faces->setText("" + scene->model.root->faces.size());
 }
@@ -266,6 +279,11 @@ void Kamehameha::on_radioButton_3_clicked()
 void Kamehameha::on_radioButton_4_clicked()
 {
     renderer = new Wireframer(scene);
+}
+
+void Kamehameha::on_radioButton_2_clicked()
+{
+    renderer = new Rasterizer(scene);
 }
 
 void Kamehameha::on_lineEdit_camWidth_editingFinished()
@@ -308,7 +326,7 @@ void Kamehameha::applySettings() {
     scene->camera.imageWidth = w;
     scene->camera.imageHeight = h;
     scene->camera.angleOfView = ui->lineEdit_fov->text ().toInt(&ok, 10);
-    bool intensity = ((float)ui->Slider_intensity->value() / (float)ui->Slider_intensity->maximum ());
+    bool ambient_intensity = ((float)ui->slider_ambientIntensity->value() / (float)ui->slider_ambientIntensity->maximum ());
 
     float camTranslateX = ui->lineEdit_posX->text().toFloat (&ok);
     float camTranslateY = ui->lineEdit_posY->text().toFloat (&ok);
@@ -318,10 +336,6 @@ void Kamehameha::applySettings() {
     float camRotateY = ui->lineEdit_rotY->text().toFloat (&ok);
     float camRotateZ = ui->lineEdit_rotZ->text().toFloat (&ok);
 
-    for(Light l : scene->lights) {
-        l.intensity = intensity;
-    }
-
     Matrix4x4 translation = Matrix4x4::translation (Vector3D(camTranslateX,
                                                              camTranslateY,
                                                              camTranslateZ));
@@ -329,20 +343,28 @@ void Kamehameha::applySettings() {
     Matrix4x4 rotation = Matrix4x4::rotation (Vector3D(camRotateX * M_PI/180,
                                                        camRotateY * M_PI/180,
                                                        camRotateZ * M_PI/180));
-    qDebug() << rotation;
 
     scene->camera.camToWorld = translation * rotation;
 }
 
 void Kamehameha::on_btn_changeColor_clicked()
 {
-    QColor color = QColorDialog::getColor (QColor(255,255,255), this, "Light color");
-    QPalette pal = palette();
+    QColor color = QColorDialog::getColor (QColor(255,255,255), this, "Ambient color");
 
-    // set black background
-    pal.setColor(QPalette::Background, color);
-    ui->btn_lightColor->setAutoFillBackground(true);
-    ui->btn_lightColor->setPalette (pal);
+    ui->btn_lightColor->setIcon(getColoredIcon(100, 100, color));
+}
+
+void Kamehameha::on_btn_changeColor_bkground_clicked()
+{
+    QColor color = QColorDialog::getColor (QColor(255,255,255), this, "Background color");
+    ui->btn_lightColor_bkground->setIcon(getColoredIcon(100, 100, color));
+
+//    // set black background
+//    pal.setColor(QPalette::Background, color);
+//    ui->btn_lightColor_bkground->setAutoFillBackground(true);
+//    ui->btn_lightColor_bkground->setPalette (pal);
+//    ui->btn_lightColor_bkground->update ();
+
 }
 
 bool Kamehameha::importModel(const QString path, Model &model) {
@@ -401,6 +423,8 @@ bool Kamehameha::importModel(const QString path, Model &model) {
     scene->model.root = new KDNode();
     scene->model.root = scene->model.root->build(faces, 0);
     scene->lights = lights;
+
+
 //    FbxMesh*mesh = root->GetMesh ();
 
 
@@ -417,5 +441,12 @@ bool Kamehameha::importModel(const QString path, Model &model) {
 
 
     return true;
+}
+
+QIcon Kamehameha::getColoredIcon(int width, int height, const QColor color) {
+    QPixmap pixmap(width, height);
+    pixmap.fill(color);
+    QIcon icon(pixmap);
+    return icon;
 }
 

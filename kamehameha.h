@@ -33,6 +33,7 @@
 #include "raytracer.h"
 #include "pathtracer.h"
 #include "wireframer.h"
+#include "rasterizer.h"
 #include "scene.h"
 #include "fbxparser.h"
 #include "kdnode.h"
@@ -80,6 +81,10 @@ private slots:
 
     void on_btn_changeColor_clicked();
 
+    void on_btn_changeColor_bkground_clicked();
+
+    void on_radioButton_2_clicked();
+
 private:
     Ui::MainWindow *ui;
     QPushButton *ui_renderButton;
@@ -103,6 +108,7 @@ private:
     State state = cancelled;
 
     bool importModel(const QString path, Model &model);
+    QIcon getColoredIcon(int width, int height, const QColor color);
 
     void startRender();
     void cancelRender();

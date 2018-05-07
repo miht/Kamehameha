@@ -15,7 +15,6 @@ QImage Tracer::generate(QProgressBar *progress, QImage image)
     float width = (float) scene->camera.imageWidth;
     float height = (float) scene->camera.imageHeight;
     float fov = scene->camera.angleOfView;
-    fov = 45;
     float imageAspectRatio = width / height;
     float scale = tanf((fov * 0.5 * M_PI)/180.0);
     float focalLength = scene->camera.focalLength;

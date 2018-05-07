@@ -14,6 +14,7 @@ class Scene
 public:
     float ambient_intensity = 0.2;
     Color ambient_color;
+    Color background_color;
 
     Camera camera;
     std::vector<Light> lights;

@@ -10,48 +10,81 @@ QImage Rasterizer::generate(QProgressBar *progress, QImage image) {
     // Plain PPM format
     //out << "P3\n" << w << ' ' << h << ' ' << "255\n";
     QPainter painter (&image);
-    painter.fillRect (0,0, image.width (), image.height (), Qt::white);
-    painter.setPen (Qt::black);
+    painter.fillRect (0,0,image.width (), image.height (), Qt::black);
+    painter.setPen (Qt::white);
 
-    // Iterate over all pixels in image, paint them
-    for(Object object : scene->model.objects) {
-        for(Face* face : object.faces) {
-            QPointF* qPoints = new QPointF[face->getPoints ().size ()];
-            for(size_t i = 0; i < face->getPoints ().size (); i++) {
-                Vector3D screenCoords = worldToScreenCoordinates (face->getPoints ()[i]);
-                qPoints[i] =  QPointF(screenCoords.x, screenCoords.y);
-            }
+    float width = (float) image.width ();
+    float height = (float) image.height ();
 
-            if(face->type == Face::triangle) {
-                //remember to convert QPoints to screen coordinates!
-                painter.setPen (Qt::black);
-                painter.drawPolygon (qPoints, 3, Qt::OddEvenFill);
+    float canvasWidth = width/height, canvasHeight = 1;
 
-                painter.setPen (Qt::green);
-                //Test drawing the normals of the face
-                for(Vertex3D v : face->getVertices ()) {
-                    Vector3D sc = worldToScreenCoordinates (v.position);
-                    Vector3D sc2 = worldToScreenCoordinates (v.position + 0.05 * v.normal.normalized ());
-                    painter.drawLine(sc.x, sc.y, sc2.x, sc2.y);
-                }
-                //Draw normals of faces
-                painter.setPen (Qt::red);
-                Vector3D midPoint = 0.33333 * (face->getVertices()[0].position +
-                        face->getVertices()[1].position + face->getVertices()[2].position);
-                Vector3D midPoint_screen = worldToScreenCoordinates (midPoint);
+    Matrix4x4 worldToCam;
+    bool inverted = Matrix4x4::inverse(scene->camera.camToWorld, worldToCam);
+    // Iterate over all pixels in image
+    for(Face* face : scene->model.root->faces) {
+        std::vector<Vector2D> points;
 
-                Vector3D e1 = face->getVertices ()[1].position - face->getVertices()[0].position;
-                Vector3D e2 = face->getVertices ()[2].position - face->getVertices ()[0].position;
-                Vector3D midPoint_screen2 = worldToScreenCoordinates (midPoint
-                                                                     + 0.05 * Vector3D::cross_prod (e1, e2).normalized ());
-                painter.drawLine(midPoint_screen.x, midPoint_screen.y, midPoint_screen2.x, midPoint_screen2.y);
+        std::vector<Vector2D> leftPixels;
+        std::vector<Vector2D> rightPixels;
 
-            }
+        int vertices = face->getPoints ().size();
+        for(size_t i = 0; i < vertices; i++) {
+            Vector3D pWorld = face->getPoints()[i];
+            Vector3D pCamera = worldToCam*pWorld;
+            Vector2D pScreen(pCamera.x / -pCamera.z, pCamera.y / -pCamera.z);
 
-            delete [] qPoints;
+//            if (std::abs(pScreen.x) <= canvasWidth || std::abs(pScreen.y) <= canvasHeight) {
+                Vector2D pNDC((pScreen.x + canvasWidth * 0.5) / canvasWidth, (pScreen.y + canvasHeight * 0.5) / canvasHeight);
+
+                int pX = (int)(pNDC.x * width);
+                int pY = (int)((1 - pNDC.y) * height);
+
+                points.push_back (Vector2D(pX, pY));
+//            }
         }
+
+        computePolygonRows (points, leftPixels, rightPixels);
+        interpolate (points[0], points[1], leftPixels);
+        interpolate(points[0], points[2], rightPixels);
+
+        Color color = scene->model.materials.value (face->material).diffuse;
+        painter.setPen(color.asQColor());
+
+        drawPolygon(painter, leftPixels, rightPixels);
     }
 
     painter.end ();
     return image;
 }
+
+void Rasterizer::computePolygonRows(const std::vector<Vector2D>& vertexPixels, std::vector<Vector2D>& leftPixels, std::vector<Vector2D>& rightPixels) {
+    int maxY, minY;
+    for(int i = 0; i < vertexPixels.size (); i++) {
+        Vector2D p = vertexPixels[i];
+        if(fabs(p.y) > maxY)
+            maxY = p.y;
+        if(fabs(p.y) < minY)
+            minY = p.y;
+    }
+
+    int size = (int) fabs(maxY - minY);
+
+    leftPixels.resize (size);
+    rightPixels.resize (size);
+
+    for(int i = 0; i < size; i++) {
+        rightPixels[i].y = i + maxY;
+        leftPixels[i].y = i + maxY;
+        leftPixels[i].x = INT_MAX;
+        rightPixels[i].x = INT_MIN;
+    }
+}
+
+void Rasterizer::drawPolygon (QPainter &painter, std::vector<Vector2D> &leftPixels, std::vector<Vector2D> &rightPixels) {
+    for(int i = 0; i < leftPixels.size(); i++) {
+        Vector2D p1 = leftPixels[i], p2 = rightPixels[i];
+        qDebug() << p1 << ", " << p2;
+        painter.drawLine(p1.x, p1.y, p2.x, p2.y);
+    }
+}
+

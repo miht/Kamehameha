@@ -10,58 +10,52 @@ QImage Wireframer::generate(QProgressBar *progress, QImage image) {
     // Plain PPM format
     //out << "P3\n" << w << ' ' << h << ' ' << "255\n";
     QPainter painter (&image);
-    painter.fillRect (0,0,image.width (), image.height (), Qt::white);
-    painter.setPen (Qt::black);
+    painter.fillRect (0,0,image.width (), image.height (), Qt::black);
+    painter.setPen (Qt::white);
 
-    float width = scene->camera.imageWidth;
-    float height = scene->camera.imageHeight;
-    float fov = scene->camera.angleOfView;
-    float imageAspectRatio = width / height;
-    float scale = tanf(fov * 0.5 * M_PI/180);
+    float width = (float) image.width ();
+    float height = (float) image.height ();
 
+    float canvasWidth = width/height, canvasHeight = 1;
+
+    Matrix4x4 worldToCam;
+    bool inverted = Matrix4x4::inverse(scene->camera.camToWorld, worldToCam);
     // Iterate over all pixels in image
-    for(Object object : scene->model.objects) {
-        for(Face* face : object.faces) {
-            QPointF* qPoints = new QPointF[face->getPoints ().size ()];
-            for(size_t i = 0; i < face->getPoints ().size (); i++) {
-                Vector3D screenCoords = worldToScreenCoordinates (face->getPoints ()[i]);
-//                qPoints[i] =  QPointF(screenCoords.x, screenCoords.y);
-                float x = (width*(face->getPoints()[i].x*(imageAspectRatio * scale) + 1)/2) - 0.5;
-                float y  = height*(1 - face->getPoints()[i].y/scale)/2 - 0.5;
-                qPoints[i] = QPointF(x, y);
-            }
+    for(Face* face : scene->model.root->faces) {
+        std::vector<Vector2D> points;
 
-            if(face->type == Face::triangle) {
-                //remember to convert QPoints to screen coordinates!
-                painter.setPen (Qt::black);
-                painter.drawPolygon (qPoints, 3, Qt::OddEvenFill);
+        int vertices = face->getPoints ().size();
+        for(size_t i = 0; i < vertices; i++) {
+            Vector3D pWorld = face->getPoints()[i];
+            Vector3D pCamera = worldToCam*pWorld;
+            Vector2D pScreen(pCamera.x / -pCamera.z, pCamera.y / -pCamera.z);
 
-//                painter.setPen (Qt::green);
-                //Test drawing the normals of the face
-//                for(Vertex3D v : face->getVertices ()) {
-//                    Vector3D sc = worldToScreenCoordinates (v.position);
-//                    Vector3D sc2 = worldToScreenCoordinates (v.position + 0.05 * v.normal.normalized ());
+//            if (std::abs(pScreen.x) <= canvasWidth || std::abs(pScreen.y) <= canvasHeight) {
+                Vector2D pNDC((pScreen.x + canvasWidth * 0.5) / canvasWidth, (pScreen.y + canvasHeight * 0.5) / canvasHeight);
 
-//                    painter.drawLine(sc.x, sc.y, sc2.x, sc2.y);
-//                }
-//                //Draw normals of faces
-//                painter.setPen (Qt::red);
-//                Vector3D midPoint = 0.33333 * (face->getVertices()[0].position +
-//                        face->getVertices()[1].position + face->getVertices()[2].position);
-//                Vector3D midPoint_screen = worldToScreenCoordinates (midPoint);
+                int pX = (int)(pNDC.x * width);
+                int pY = (int)((1 - pNDC.y) * height);
 
-//                Vector3D e1 = face->getVertices ()[1].position - face->getVertices()[0].position;
-//                Vector3D e2 = face->getVertices ()[2].position - face->getVertices ()[0].position;
-//                Vector3D midPoint_screen2 = worldToScreenCoordinates (midPoint
-//                                                                     + 0.05 * Vector3D::cross_prod (e1, e2).normalized ());
-//                painter.drawLine(midPoint_screen.x, midPoint_screen.y, midPoint_screen2.x, midPoint_screen2.y);
-
-            }
-
-            delete [] qPoints;
+                points.push_back (Vector2D(pX, pY));
+//            }
         }
+
+        drawEdges(painter, points);
+
     }
 
     painter.end ();
     return image;
 }
+
+void Wireframer::drawEdges(QPainter &painter, const std::vector<Vector2D> points) {
+    int n = points.size();
+    for(int i = 0; i < n; i++) {
+        Vector2D p1 = points[i];
+        Vector2D p2 = points[(i + 1) % n];
+
+        //  TODO CHECK IF OUTSIDE OF SCREEN BOUNDS
+        painter.drawLine(p1.x, p1.y, p2.x, p2.y);
+    }
+}
+

@@ -11,6 +11,30 @@ Vector2D::Vector2D()
     y = 0;
 }
 
+Vector2D Vector2D::operator+(const Vector2D v) const {
+    return Vector2D(x + v.x, y + v.y);
+}
+
+Vector2D Vector2D::operator-(const Vector2D v) const {
+    return Vector2D(x - v.x, y - v.y);
+}
+
+Vector2D Vector2D::operator-() const {
+    return Vector2D(-x, -y);
+}
+
+Vector2D Vector2D::operator*(const Vector2D v) const {
+    return Vector2D(x*v.x, y*v.y);
+}
+
+Vector2D Vector2D::operator*(const float s) const {
+    return Vector2D(s * x, s * y);
+}
+
+Vector2D Vector2D::operator/(const float d) const {
+    return Vector2D(x/d, y/d);
+}
+
 std::ostream & operator<<(std::ostream & Str, const Vector2D& v) {
     return Str << "(" << v.x << ", " << v.y << ")\n";
 }
@@ -112,8 +136,20 @@ Vector3D Vector3D::operator/(const float d) const {
 
 //commutativity
 Vector3D operator*(const float s, const Vector3D v) {
-   return v * s;
+    return v * s;
 }
+
+//Vector interpolation
+void interpolate(const Vector2D a, const Vector2D b, std::vector<Vector2D> &result) {
+    int N = result.size();
+    Vector2D step = (b - a) / fmax(N - 1, 1);
+    Vector2D current = a;
+    for( int i=0; i<N; ++i ) {
+        result[i] = current;
+        current = current + step;
+    }
+}
+
 
 Matrix4x4::Matrix4x4() {
 
@@ -156,6 +192,141 @@ Matrix4x4 Matrix4x4::rotation(const Vector3D v) {
     tz(1, 1) = cosf(v.z);
 
     return tx * ty * tz;
+}
+
+bool Matrix4x4::inverse(Matrix4x4 mat, Matrix4x4 &out) {
+    Matrix4x4 inv;
+    float m[16];
+    //    std::copy(mat.elements, m);
+    std::copy(std::begin(mat.elements), std::end(mat.elements), std::begin(m));
+    double det;
+    int i;
+
+    inv(0,0) = m[5]  * m[10] * m[15] -
+            m[5]  * m[11] * m[14] -
+            m[9]  * m[6]  * m[15] +
+            m[9]  * m[7]  * m[14] +
+            m[13] * m[6]  * m[11] -
+            m[13] * m[7]  * m[10];
+
+    inv(1,0) = -m[4]  * m[10] * m[15] +
+            m[4]  * m[11] * m[14] +
+            m[8]  * m[6]  * m[15] -
+            m[8]  * m[7]  * m[14] -
+            m[12] * m[6]  * m[11] +
+            m[12] * m[7]  * m[10];
+
+    inv(2,0) = m[4]  * m[9] * m[15] -
+            m[4]  * m[11] * m[13] -
+            m[8]  * m[5] * m[15] +
+            m[8]  * m[7] * m[13] +
+            m[12] * m[5] * m[11] -
+            m[12] * m[7] * m[9];
+
+    inv(3,0) = -m[4]  * m[9] * m[14] +
+            m[4]  * m[10] * m[13] +
+            m[8]  * m[5] * m[14] -
+            m[8]  * m[6] * m[13] -
+            m[12] * m[5] * m[10] +
+            m[12] * m[6] * m[9];
+
+    inv(0,1) = -m[1]  * m[10] * m[15] +
+            m[1]  * m[11] * m[14] +
+            m[9]  * m[2] * m[15] -
+            m[9]  * m[3] * m[14] -
+            m[13] * m[2] * m[11] +
+            m[13] * m[3] * m[10];
+
+    inv(1,1) = m[0]  * m[10] * m[15] -
+            m[0]  * m[11] * m[14] -
+            m[8]  * m[2] * m[15] +
+            m[8]  * m[3] * m[14] +
+            m[12] * m[2] * m[11] -
+            m[12] * m[3] * m[10];
+
+    inv(2,1) = -m[0]  * m[9] * m[15] +
+            m[0]  * m[11] * m[13] +
+            m[8]  * m[1] * m[15] -
+            m[8]  * m[3] * m[13] -
+            m[12] * m[1] * m[11] +
+            m[12] * m[3] * m[9];
+
+    inv(3,1) = m[0]  * m[9] * m[14] -
+            m[0]  * m[10] * m[13] -
+            m[8]  * m[1] * m[14] +
+            m[8]  * m[2] * m[13] +
+            m[12] * m[1] * m[10] -
+            m[12] * m[2] * m[9];
+
+    inv(0,2) = m[1]  * m[6] * m[15] -
+            m[1]  * m[7] * m[14] -
+            m[5]  * m[2] * m[15] +
+            m[5]  * m[3] * m[14] +
+            m[13] * m[2] * m[7] -
+            m[13] * m[3] * m[6];
+
+    inv(1,2) = -m[0]  * m[6] * m[15] +
+            m[0]  * m[7] * m[14] +
+            m[4]  * m[2] * m[15] -
+            m[4]  * m[3] * m[14] -
+            m[12] * m[2] * m[7] +
+            m[12] * m[3] * m[6];
+
+    inv(2,2) = m[0]  * m[5] * m[15] -
+            m[0]  * m[7] * m[13] -
+            m[4]  * m[1] * m[15] +
+            m[4]  * m[3] * m[13] +
+            m[12] * m[1] * m[7] -
+            m[12] * m[3] * m[5];
+
+    inv(3,2) = -m[0]  * m[5] * m[14] +
+            m[0]  * m[6] * m[13] +
+            m[4]  * m[1] * m[14] -
+            m[4]  * m[2] * m[13] -
+            m[12] * m[1] * m[6] +
+            m[12] * m[2] * m[5];
+
+    inv(0,3) = -m[1] * m[6] * m[11] +
+            m[1] * m[7] * m[10] +
+            m[5] * m[2] * m[11] -
+            m[5] * m[3] * m[10] -
+            m[9] * m[2] * m[7] +
+            m[9] * m[3] * m[6];
+
+    inv(1,3) = m[0] * m[6] * m[11] -
+            m[0] * m[7] * m[10] -
+            m[4] * m[2] * m[11] +
+            m[4] * m[3] * m[10] +
+            m[8] * m[2] * m[7] -
+            m[8] * m[3] * m[6];
+
+    inv(2,3) = -m[0] * m[5] * m[11] +
+            m[0] * m[7] * m[9] +
+            m[4] * m[1] * m[11] -
+            m[4] * m[3] * m[9] -
+            m[8] * m[1] * m[7] +
+            m[8] * m[3] * m[5];
+
+    inv(3,3) = m[0] * m[5] * m[10] -
+            m[0] * m[6] * m[9] -
+            m[4] * m[1] * m[10] +
+            m[4] * m[2] * m[9] +
+            m[8] * m[1] * m[6] -
+            m[8] * m[2] * m[5];
+
+    det = m[0] * inv(0,0) + m[1] * inv(1,0) + m[2] * inv(2,0) + m[3] * inv(3,0);
+
+    if (det == 0)
+        return false;
+
+    det = 1.0 / det;
+
+    for (i = 0; i < 4 ; i++) {
+        for (int j = 0; j < 4; j++) {
+            out(i, j) = inv(i, j) * det;
+        }
+    }
+    return true;
 }
 
 float& Matrix4x4::operator()(const int i, const int j) {
@@ -201,6 +372,7 @@ std::ostream& operator<<(std::ostream& Str, Matrix4x4& m) {
     Str << ")\n";
     return Str;
 }
+
 QDebug operator<<(QDebug d, Matrix4x4 &m) {
 
     for(int i = 0; i < 4; i++) {
