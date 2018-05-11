@@ -15,7 +15,8 @@ public:
 
 private:
     void computePolygonRows(const std::vector<Vector2D>& vertexPixels, std::vector<Vector2D>& leftPixels, std::vector<Vector2D>& rightPixels);
-    void drawPolygon(QPainter &painter, std::vector<Vector2D> &leftPixels, std::vector<Vector2D> &rightPixels);
+    void drawPolygon(QPainter &painter, const std::vector<Vector2D> &leftPixels, const std::vector<Vector2D> &rightPixels);
+    void drawRows(QPainter &painter, const std::vector<Vector2D>& leftPixels, const std::vector<Vector2D>& rightPixels);
 
 };
 

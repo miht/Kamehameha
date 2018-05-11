@@ -58,33 +58,55 @@ QImage Rasterizer::generate(QProgressBar *progress, QImage image) {
 }
 
 void Rasterizer::computePolygonRows(const std::vector<Vector2D>& vertexPixels, std::vector<Vector2D>& leftPixels, std::vector<Vector2D>& rightPixels) {
-    int maxY, minY;
+    int maxY = INT_MIN;
+    int minY = INT_MAX;
+
     for(int i = 0; i < vertexPixels.size (); i++) {
         Vector2D p = vertexPixels[i];
-        if(fabs(p.y) > maxY)
+        if(p.y > maxY)
             maxY = p.y;
-        if(fabs(p.y) < minY)
+        if(p.y < minY)
             minY = p.y;
     }
 
-    int size = (int) fabs(maxY - minY);
+
+    int size = (int) abs(maxY - minY);
 
     leftPixels.resize (size);
     rightPixels.resize (size);
 
+    qDebug() << "Size " << size;
+
     for(int i = 0; i < size; i++) {
-        rightPixels[i].y = i + maxY;
-        leftPixels[i].y = i + maxY;
+        rightPixels[i].y = i + size;
+        leftPixels[i].y = i + size;
         leftPixels[i].x = INT_MAX;
         rightPixels[i].x = INT_MIN;
     }
 }
 
-void Rasterizer::drawPolygon (QPainter &painter, std::vector<Vector2D> &leftPixels, std::vector<Vector2D> &rightPixels) {
+void Rasterizer::drawPolygon (QPainter &painter, const std::vector<Vector2D> &leftPixels, const std::vector<Vector2D> &rightPixels) {
+//    for(int i = 0; i < leftPixels.size(); i++) {
+//        Vector2D p1 = leftPixels[i], p2 = rightPixels[i];
+//        painter.drawLine(p1.x, p1.y, p2.x, p2.y);
+//    }
+
     for(int i = 0; i < leftPixels.size(); i++) {
-        Vector2D p1 = leftPixels[i], p2 = rightPixels[i];
-        qDebug() << p1 << ", " << p2;
-        painter.drawLine(p1.x, p1.y, p2.x, p2.y);
+        int row = leftPixels[i].y;
+        int rightColumn = std::max(leftPixels[i].x, rightPixels[i].x);
+        int leftColumn = std::min(leftPixels[i].x, rightPixels[i].x);
+        for(int col = leftColumn; col < rightColumn ; col++) {
+            painter.drawPoint (col, row);
+            qDebug() << "col " << col << ", row " << row;
+        }
+    }
+}
+
+void Rasterizer::drawRows(QPainter &painter, const std::vector<Vector2D>& leftPixels, const std::vector<Vector2D>& rightPixels) {
+    for(int i = 0; i < leftPixels.size(); i++) {
+        for(int j = leftPixels[i].x; j < rightPixels[i].x; j++) {
+
+        }
     }
 }
 
