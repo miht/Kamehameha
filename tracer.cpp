@@ -12,8 +12,8 @@ std::uniform_real_distribution<float> distribution(-1, 1);
 QImage Tracer::generate(QProgressBar *progress, QImage image)
 {
     //Calculate screen coordinates here
-    float width = (float) scene->camera.imageWidth;
-    float height = (float) scene->camera.imageHeight;
+    float width = (float) scene->camera.viewportWidth;
+    float height = (float) scene->camera.viewportHeight;
     float fov = scene->camera.angleOfView;
     float imageAspectRatio = width / height;
     float scale = tanf((fov * 0.5 * M_PI)/180.0);

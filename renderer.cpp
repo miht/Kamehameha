@@ -17,18 +17,35 @@ QPointF convertToQPointF(Vector3D point) {
     return QPointF(point.x, point.y);
 }
 
-Vector3D Renderer::screenToWorldCoordinates(const Vector3D vec) {
-    float x = (vec.x - ((float) scene->camera.imageWidth) / 2)/scene->camera.imageWidth;
-    float y = (vec.y - ((float) scene->camera.imageHeight) / 2)/scene->camera.imageHeight;
-    float z = scene->camera.position.z + scene->camera.depth; //z = 0 ???
+//TODO TODO TODO
+Vector3D Renderer::viewportToWorld(const Vector2D vec) {
+    int width = scene->camera.viewportWidth;
+    int height = scene->camera.viewportHeight;
+    float canvasWidth = (float)width/(float)height, canvasHeight = 1;
 
-    return Vector3D(x,y,z);
+    Vector2D pNDC(vec.x / width, -vec.y/height + 1);
+    Vector2D pScreen(pNDC.x * canvasWidth - 0.5 * canvasWidth, pNDC.y * canvasHeight - 0.5 * canvasHeight);
+    Vector3D pCamera(pScreen.x * (-1), pScreen.y * (-1), -1);
+
+    Vector3D pos = scene->camera.camToWorld * pCamera;
+
+    return pos;
 }
 
-Vector3D Renderer::worldToScreenCoordinates(const Vector3D vec) {
-    float x = vec.x * scene->camera.imageWidth + ((float) scene->camera.imageWidth)/2;
-    float y = vec.y * scene->camera.imageHeight + ((float) scene->camera.imageHeight)/2;
-    float z = 0;  //z = 0 ???
+Vector2D Renderer::worldToViewport(const Vector3D vec) {
+    int width = scene->camera.viewportWidth;
+    int height = scene->camera.viewportHeight;
+    float canvasWidth = (float)width/(float)height, canvasHeight = 1;
 
-    return Vector3D(x,y,z);
+    Matrix4x4 worldToCam;
+    bool inverted = Matrix4x4::inverse(scene->camera.camToWorld, worldToCam);
+
+    Vector3D pCamera = worldToCam*vec;
+    Vector2D pScreen(pCamera.x / -pCamera.z, pCamera.y / -pCamera.z);
+    Vector2D pNDC((pScreen.x + canvasWidth * 0.5) / canvasWidth, (pScreen.y + canvasHeight * 0.5) / canvasHeight);
+
+    int pX = (int)(pNDC.x * width);
+    int pY = (int)((1 - pNDC.y) * height);
+
+    return Vector2D(pX, pY);
 }

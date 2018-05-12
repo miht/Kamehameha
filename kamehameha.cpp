@@ -33,18 +33,18 @@ Kamehameha::Kamehameha(QWidget *parent) :
 
     scene = new Scene(0.5, Color(1,1,1));
     scene->camera.mode = Camera::perspective;
-    scene->camera.imageWidth = graphicsView->width ();
-    scene->camera.imageHeight = graphicsView->height();
+    scene->camera.viewportWidth = graphicsView->width ();
+    scene->camera.viewportHeight = graphicsView->height();
 
     // configure progress bar
     ui_renderProgressBar->setMinimum(0);
-    ui_renderProgressBar->setMaximum(scene->camera.imageWidth * scene->camera.imageHeight);
+    ui_renderProgressBar->setMaximum(scene->camera.viewportWidth * scene->camera.viewportHeight);
 
     //hide the cancel button
     ui_cancelButton->setVisible(false);
 
-    ui_widthField->setText (QString::number(scene->camera.imageWidth));
-    ui_heightField->setText (QString::number(scene->camera.imageHeight));
+    ui_widthField->setText (QString::number(scene->camera.viewportWidth));
+    ui_heightField->setText (QString::number(scene->camera.viewportHeight));
 
     //set to path rendering mode at the start
     ui->radioButton->click();
@@ -105,8 +105,8 @@ void Kamehameha::on_cancelButton_clicked()
  */
 void Kamehameha::processImage(int index) {
     QImage img = watcher->resultAt(index);
-    float scaleX = graphicsView->width () / scene->camera.imageWidth;
-    float scaleY = graphicsView->height () / scene->camera.imageHeight;
+    float scaleX = graphicsView->width () / scene->camera.viewportWidth;
+    float scaleY = graphicsView->height () / scene->camera.viewportHeight;
 
     float offsetX = img.offset().x() * scaleX;
     float offsetY = img.offset().y() * scaleY;
@@ -137,9 +137,9 @@ void Kamehameha::startRender() {
         pt->globalIllumination = ui->checkbox_global_illu->checkState () == Qt::Checked;
         pt->antiAliasing = ui->checkbox_anti_alias->checkState () == Qt::Checked;
 
-        for(int i = 0; i < scene->camera.imageWidth; i+= scene->camera.imageWidth/subdivisions) {
-            for(int j = 0; j < scene->camera.imageHeight; j += scene->camera.imageHeight/subdivisions) {
-                QImage img = QImage(scene->camera.imageWidth/subdivisions, scene->camera.imageHeight/subdivisions, QImage::Format_RGB32);
+        for(int i = 0; i < scene->camera.viewportWidth; i+= scene->camera.viewportWidth/subdivisions) {
+            for(int j = 0; j < scene->camera.viewportHeight; j += scene->camera.viewportHeight/subdivisions) {
+                QImage img = QImage(scene->camera.viewportWidth/subdivisions, scene->camera.viewportHeight/subdivisions, QImage::Format_RGB32);
                 img.setOffset(QPoint(i, j));
                 images << img;
             }
@@ -160,9 +160,9 @@ void Kamehameha::startRender() {
         rt->depth = ui->slider_depth->value ();
         rt->antiAliasing = ui->checkbox_anti_alias->checkState () == Qt::Checked;
 
-        for(int i = 0; i < scene->camera.imageWidth; i+= scene->camera.imageWidth/subdivisions) {
-            for(int j = 0; j < scene->camera.imageHeight; j += scene->camera.imageHeight/subdivisions) {
-                QImage img = QImage(scene->camera.imageWidth/subdivisions, scene->camera.imageHeight/subdivisions, QImage::Format_RGB32);
+        for(int i = 0; i < scene->camera.viewportWidth; i+= scene->camera.viewportWidth/subdivisions) {
+            for(int j = 0; j < scene->camera.viewportHeight; j += scene->camera.viewportHeight/subdivisions) {
+                QImage img = QImage(scene->camera.viewportWidth/subdivisions, scene->camera.viewportHeight/subdivisions, QImage::Format_RGB32);
                 img.setOffset(QPoint(i, j));
                 images << img;
             }
@@ -180,10 +180,10 @@ void Kamehameha::startRender() {
     case Renderer::Rasterizer:
     {
         Rasterizer* r = dynamic_cast<Rasterizer*>(renderer);
-        QImage image(scene->camera.imageWidth, scene->camera.imageHeight, QImage::Format_ARGB32);
+        QImage image(scene->camera.viewportWidth, scene->camera.viewportHeight, QImage::Format_ARGB32);
 
-        float scaleX = graphicsView->width () / scene->camera.imageWidth;
-        float scaleY = graphicsView->height () / scene->camera.imageHeight;
+        float scaleX = graphicsView->width () / scene->camera.viewportWidth;
+        float scaleY = graphicsView->height () / scene->camera.viewportHeight;
 
         graphicsScene->addPixmap (QPixmap::fromImage(r->generate (ui_renderProgressBar, image).scaled (scaleX * image.width (), scaleY * image.height ())));
 
@@ -192,9 +192,9 @@ void Kamehameha::startRender() {
     case Renderer::Wireframer:
     {
         Wireframer* wf = dynamic_cast<Wireframer*>(renderer);
-        QImage image(scene->camera.imageWidth, scene->camera.imageHeight, QImage::Format_ARGB32);
-        float scaleX = graphicsView->width () / scene->camera.imageWidth;
-        float scaleY = graphicsView->height () / scene->camera.imageHeight;
+        QImage image(scene->camera.viewportWidth, scene->camera.viewportHeight, QImage::Format_ARGB32);
+        float scaleX = graphicsView->width () / scene->camera.viewportWidth;
+        float scaleY = graphicsView->height () / scene->camera.viewportHeight;
 
         graphicsScene->addPixmap (QPixmap::fromImage(wf->generate (ui_renderProgressBar, image).scaled (scaleX * image.width (), scaleY * image.height ())));
 
@@ -290,14 +290,14 @@ void Kamehameha::on_lineEdit_camWidth_editingFinished()
 {
 //    bool ok = true;
 //    int w = ui_widthField->text ().toInt (&ok, 10);
-//    scene->camera.imageWidth = w;
+//    scene->camera.viewportWidth = w;
 }
 
 void Kamehameha::on_lineEdit_camHeight_editingFinished()
 {
 //    bool ok = true;
 //    int h = ui_heightField->text ().toInt (&ok, 10);
-//   scene->camera.imageHeight = h;
+//   scene->camera.viewportHeight = h;
 }
 
 int Kamehameha::showMessageDialog(QString title, QString message) {
@@ -323,8 +323,8 @@ void Kamehameha::applySettings() {
 
     int w = ui_widthField->text ().toInt (&ok, 10);
     int h = ui_heightField->text ().toInt (&ok, 10);
-    scene->camera.imageWidth = w;
-    scene->camera.imageHeight = h;
+    scene->camera.viewportWidth = w;
+    scene->camera.viewportHeight = h;
     scene->camera.angleOfView = ui->lineEdit_fov->text ().toInt(&ok, 10);
     bool ambient_intensity = ((float)ui->slider_ambientIntensity->value() / (float)ui->slider_ambientIntensity->maximum ());
 

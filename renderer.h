@@ -22,11 +22,8 @@ public:
     void setScene(Scene *scene);
 
 protected:
-    const int DEFAULT_WIDTH = 640;
-    const int DEFAULT_HEIGHT = 480;
-
-    Vector3D screenToWorldCoordinates(const Vector3D vec);
-    Vector3D worldToScreenCoordinates(const Vector3D vec);
+    Vector3D viewportToWorld(const Vector2D vec);
+    Vector2D worldToViewport(const Vector3D vec);
 };
 
 #endif // RENDERER_H

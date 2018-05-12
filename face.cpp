@@ -101,6 +101,18 @@ bool Triangle::intersects(Ray ray, float &t0, float &t1, Intersection &intersect
     return true;
 }
 
+bool Triangle::contains(const Vector2D v1, const Vector2D v2, const Vector2D v3, const Vector2D p) {
+
+    bool inside = true;
+
+    inside &= ((p.x - v1.x) * (v2.y - v1.y) - (p.y - v1.y) * (v2.x - v1.x) >= 0); //p1 = a p2 = b p = c
+    inside &= ((p.x - v2.x) * (v3.y - v2.y) - (p.y - v2.y) * (v3.x - v2.x) >= 0); //p1 = a p3 = b p = c
+    inside &= ((p.x - v3.x) * (v1.y - v3.y) - (p.y - v3.y) * (v1.x - v3.x) >= 0); //p2 = a p3 = b p = c
+
+    return inside;
+}
+
+
 std::ostream & operator<<(std::ostream & Str, const Triangle& t) {
     //print something from v to str, e.g: Str << v.getX();
     return Str << t.vertices[0] << ", " << t.vertices[1] << ", " << t.vertices[2];

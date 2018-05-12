@@ -11,7 +11,7 @@ public:
     static const int DEFAULT_VIEWPORT_HEIGHT = 128;
 
     float apertureWidth = 0, apertureHeight = 0;
-    int imageWidth = DEFAULT_VIEWPORT_WIDTH, imageHeight = DEFAULT_VIEWPORT_HEIGHT;
+    int viewportWidth = DEFAULT_VIEWPORT_WIDTH, viewportHeight = DEFAULT_VIEWPORT_HEIGHT;
     float angleOfView = 45;
     float clippingPlane[2] = {0,0};
     float window[4] = {0,0,0,0};
@@ -38,3 +38,5 @@ private:
 };
 
 #endif // CAMERA_H
+
+

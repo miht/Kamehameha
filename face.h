@@ -35,7 +35,7 @@ class Triangle : public Face
 public:
     Triangle(Vertex3D v1, Vertex3D v2, Vertex3D v3, const char* material);
     bool intersects(Ray ray, float &t0, float &t1, Intersection &intersection, bool smooth) override;
-
+    static bool contains(const Vector2D v1, const Vector2D v2, const Vector2D v3, const Vector2D p);
     friend std::ostream & operator<<(std::ostream & Str, const Triangle& t);
     friend QDebug operator<< (QDebug d, const Triangle &t);
 };
