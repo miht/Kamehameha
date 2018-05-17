@@ -30,6 +30,7 @@ class Vector3D
 public:
     float x, y, z;
     Vector3D(float x, float y, float z);
+    Vector3D(Vector2D v);
     Vector3D();
 
     float norm();
@@ -44,6 +45,8 @@ public:
     static Vector3D up();
     static Vector3D right();
     static Vector3D forward();
+
+    Vector2D asVector2D();
 
     Vector3D operator+(const Vector3D v) const;
     Vector3D operator-(const Vector3D v) const;

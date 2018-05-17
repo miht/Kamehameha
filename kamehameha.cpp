@@ -12,12 +12,6 @@ Kamehameha::Kamehameha(QWidget *parent) :
     ui_logBrowser = findChild<QTextBrowser*>("logBrowser");
     ui_renderProgressBar = findChild<QProgressBar*>("renderProgressBar");
 
-    QString numberInputMask = "9000";
-    ui_widthField = ui->lineEdit_camWidth;
-    ui_widthField->setInputMask (numberInputMask);
-    ui_heightField = ui->lineEdit_camHeight;
-    ui_heightField->setInputMask (numberInputMask);
-
     //Sliders
     ui_depthSlider = ui->slider_depth;
     ui_subdivisionSlider = ui->slider_subdivision;
@@ -36,6 +30,17 @@ Kamehameha::Kamehameha(QWidget *parent) :
     scene->camera.viewportWidth = graphicsView->width ();
     scene->camera.viewportHeight = graphicsView->height();
 
+    //Configure combobox with available resolutions
+    ui_resComboBox = ui->comboBox_resolution;
+
+    addResolution (std::make_pair(128, 128));
+    addResolution (std::make_pair(256, 256));
+    addResolution (std::make_pair(512, 512));
+    addResolution (std::make_pair(800, 600));
+    addResolution (std::make_pair(1024, 768));
+    addResolution (std::make_pair(1366, 768));
+    addResolution (std::make_pair(1920, 1080));
+
     // configure progress bar
     ui_renderProgressBar->setMinimum(0);
     ui_renderProgressBar->setMaximum(scene->camera.viewportWidth * scene->camera.viewportHeight);
@@ -43,18 +48,15 @@ Kamehameha::Kamehameha(QWidget *parent) :
     //hide the cancel button
     ui_cancelButton->setVisible(false);
 
-    ui_widthField->setText (QString::number(scene->camera.viewportWidth));
-    ui_heightField->setText (QString::number(scene->camera.viewportHeight));
-
     //set to path rendering mode at the start
     ui->radioButton->click();
 
     graphicsView->setScene(graphicsScene);
 
-//    scene->lights.push_back(Light(Vector3D(0,0,0), 1, Color(1, 1, 1)));
+    //    scene->lights.push_back(Light(Vector3D(0,0,0), 1, Color(1, 1, 1)));
 
-//    scene->lights.push_back(Light(Vector3D(1.5, 1.5, -0.5), 0.3, Color(1, 1, 1)));
-//    scene->lights.push_back(Light(Vector3D(-0.5, -0.5, 2.5), 0.6, Color(1,1,1)));
+    //    scene->lights.push_back(Light(Vector3D(1.5, 1.5, -0.5), 0.3, Color(1, 1, 1)));
+    //    scene->lights.push_back(Light(Vector3D(-0.5, -0.5, 2.5), 0.6, Color(1,1,1)));
 
     //Initialize the watcher
     watcher = new QFutureWatcher<QImage>();
@@ -81,7 +83,7 @@ void Kamehameha::on_renderButton_clicked()
                 state = rendering;
             }
             else {
-               showMessageDialog ("Bög", "No objects found. Did you specify a non-empty .obj file?");
+                showMessageDialog ("Bög", "No objects found. Did you specify a non-empty .obj file?");
             }
         }
     }
@@ -124,8 +126,14 @@ void Kamehameha::processImage(int index) {
 
 void Kamehameha::startRender() {
     QList<QImage> images; //the qtconcurrentmap will be applied to this list
-
     applySettings();
+
+//    QWidget *outputWindow = new QWidget();
+//    QGraphicsView gv(outputWindow);
+//    outputWindow->setFixedSize(scene->camera.viewportWidth, scene->camera.viewportHeight);
+//    outputWindow->setSizePolicy (QSizePolicy::Fixed, QSizePolicy::Fixed);
+//    outputWindow->setWindowTitle ("Render output");
+//    outputWindow->show();
 
     switch(renderer->mode) {
     case Renderer::Pathtracer:
@@ -251,15 +259,15 @@ void Kamehameha::on_toolButton_clicked()
     file = info.absoluteFilePath ();
     dir = info.absolutePath () + "/";
 
-//    scene->model = ObjParser::parse(dir, file);
-//    scene->model = importModel (file);
+    //    scene->model = ObjParser::parse(dir, file);
+    //    scene->model = importModel (file);
     bool imported = importModel (file, scene->model);
 
-//    ui->btn_lightColor->setIcon (getColoredIcon (100, 100, Color((scene->ambient_color.asVector3D ()*scene->ambient_intensity)).asQColor ());
-//    ui->btn_lightColor_bkground->setIcon (getColoredIcon (100, 100, scene->ambient_color*scene->ambient_intensity));
+    //    ui->btn_lightColor->setIcon (getColoredIcon (100, 100, Color((scene->ambient_color.asVector3D ()*scene->ambient_intensity)).asQColor ());
+    //    ui->btn_lightColor_bkground->setIcon (getColoredIcon (100, 100, scene->ambient_color*scene->ambient_intensity));
 
-//    ui->lbl_edges->setText ("" + 0);
-//    ui->lbl_faces->setText("" + scene->model.root->faces.size());
+    //    ui->lbl_edges->setText ("" + 0);
+    //    ui->lbl_faces->setText("" + scene->model.root->faces.size());
 }
 
 //Path
@@ -286,20 +294,6 @@ void Kamehameha::on_radioButton_2_clicked()
     renderer = new Rasterizer(scene);
 }
 
-void Kamehameha::on_lineEdit_camWidth_editingFinished()
-{
-//    bool ok = true;
-//    int w = ui_widthField->text ().toInt (&ok, 10);
-//    scene->camera.viewportWidth = w;
-}
-
-void Kamehameha::on_lineEdit_camHeight_editingFinished()
-{
-//    bool ok = true;
-//    int h = ui_heightField->text ().toInt (&ok, 10);
-//   scene->camera.viewportHeight = h;
-}
-
 int Kamehameha::showMessageDialog(QString title, QString message) {
     QMessageBox msgBox;
     msgBox.setWindowTitle(title);
@@ -321,8 +315,9 @@ void Kamehameha::applySettings() {
     //Attempt to parse numbers
     bool ok = true;
 
-    int w = ui_widthField->text ().toInt (&ok, 10);
-    int h = ui_heightField->text ().toInt (&ok, 10);
+    std::pair<int, int> resolution = resolutions[ui_resComboBox->currentIndex ()];
+    int w = resolution.first;
+    int h = resolution.second;
     scene->camera.viewportWidth = w;
     scene->camera.viewportHeight = h;
     scene->camera.angleOfView = ui->lineEdit_fov->text ().toInt(&ok, 10);
@@ -341,10 +336,10 @@ void Kamehameha::applySettings() {
                                                              camTranslateZ));
 
     Matrix4x4 rotation = Matrix4x4::rotation (Vector3D(camRotateX * M_PI/180,
-                                                       camRotateY * M_PI/180,
+                                                       (camRotateY) * M_PI/180,
                                                        camRotateZ * M_PI/180));
 
-    scene->camera.camToWorld = translation * rotation;
+    scene->camera.world = translation * rotation;
 }
 
 void Kamehameha::on_btn_changeColor_clicked()
@@ -359,12 +354,22 @@ void Kamehameha::on_btn_changeColor_bkground_clicked()
     QColor color = QColorDialog::getColor (QColor(255,255,255), this, "Background color");
     ui->btn_lightColor_bkground->setIcon(getColoredIcon(100, 100, color));
 
-//    // set black background
-//    pal.setColor(QPalette::Background, color);
-//    ui->btn_lightColor_bkground->setAutoFillBackground(true);
-//    ui->btn_lightColor_bkground->setPalette (pal);
-//    ui->btn_lightColor_bkground->update ();
+    //    // set black background
+    //    pal.setColor(QPalette::Background, color);
+    //    ui->btn_lightColor_bkground->setAutoFillBackground(true);
+    //    ui->btn_lightColor_bkground->setPalette (pal);
+    //    ui->btn_lightColor_bkground->update ();
 
+}
+
+bool Kamehameha::addResolution(const std::pair<int, int> res) {
+    char res_buffer[15];
+    sprintf(res_buffer, "%d, %d", res.first, res.second);
+    int index = resolutions.size ();
+    ui_resComboBox->insertItem(index, res_buffer);
+    resolutions.push_back (res);
+
+    return true;
 }
 
 bool Kamehameha::importModel(const QString path, Model &model) {
@@ -400,6 +405,10 @@ bool Kamehameha::importModel(const QString path, Model &model) {
 
     // Create a new scene so it can be populated by the imported file.
     FbxScene* lScene = FbxScene::Create(lSdkManager,"Scene");
+    FbxAxisSystem directXAxisSys(FbxAxisSystem::EUpVector::eZAxis,
+                                 FbxAxisSystem::EFrontVector::eParityEven,
+                                 FbxAxisSystem::eRightHanded);
+    directXAxisSys.ConvertScene(lScene);
 
     // Import the contents of the file into the scene.
     lImporter->Import(lScene);
@@ -418,25 +427,25 @@ bool Kamehameha::importModel(const QString path, Model &model) {
 
     FbxParser::process(root, faces, lights, scene->model.materials);
 
-//    FbxParser::processMaterials (root, materials);
+    //    FbxParser::processMaterials (root, materials);
 
     scene->model.root = new KDNode();
     scene->model.root = scene->model.root->build(faces, 0);
     scene->lights = lights;
 
 
-//    FbxMesh*mesh = root->GetMesh ();
+    //    FbxMesh*mesh = root->GetMesh ();
 
 
-//    model.numberOfFaces = mesh->GetPolygonCount ();
-//    model.numberOfVertices = mesh->GetPolygonVertexCount ();
+    //    model.numberOfFaces = mesh->GetPolygonCount ();
+    //    model.numberOfVertices = mesh->GetPolygonVertexCount ();
 
-//    qDebug() << "Test 2";
+    //    qDebug() << "Test 2";
 
-//    //Create the triangles. TODO: transition entirely to using FBX polygons instead of our native geometry?
-//    std::vector<Face*> faces;
+    //    //Create the triangles. TODO: transition entirely to using FBX polygons instead of our native geometry?
+    //    std::vector<Face*> faces;
 
-//    qDebug() << "Test 3";
+    //    qDebug() << "Test 3";
 
 
 

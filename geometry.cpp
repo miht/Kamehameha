@@ -48,6 +48,11 @@ Vector3D::Vector3D(float x, float y, float z)
 {
 }
 
+Vector3D::Vector3D(Vector2D v)
+    :   x(v.x), y(v.y)
+{
+}
+
 Vector3D::Vector3D()
 {
     x = 0;
@@ -99,7 +104,10 @@ Vector3D Vector3D::right() {
 
 Vector3D Vector3D::forward() {
     return Vector3D(0,0,1);
+}
 
+Vector2D Vector3D::asVector2D () {
+    return Vector2D(x, y);
 }
 
 std::ostream & operator<<(std::ostream & Str, const Vector3D& v) {
@@ -199,7 +207,7 @@ bool Matrix4x4::inverse(Matrix4x4 mat, Matrix4x4 &out) {
     float m[16];
     //    std::copy(mat.elements, m);
     std::copy(std::begin(mat.elements), std::end(mat.elements), std::begin(m));
-    double det;
+    double det = 0.0;
     int i;
 
     inv(0,0) = m[5]  * m[10] * m[15] -
@@ -316,8 +324,9 @@ bool Matrix4x4::inverse(Matrix4x4 mat, Matrix4x4 &out) {
 
     det = m[0] * inv(0,0) + m[1] * inv(1,0) + m[2] * inv(2,0) + m[3] * inv(3,0);
 
-    if (det == 0)
+    if (det == 0) {
         return false;
+    }
 
     det = 1.0 / det;
 

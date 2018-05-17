@@ -8,13 +8,14 @@ class Transform
 public:
     Vector3D position;
     Vector3D rotation;
+
+    Vector3D forward, up, right, target;
+
     Matrix4x4 world;
 
     Transform();
 
-    Vector3D forward();
-    Vector3D up();
-    Vector3D right();
+    void lookAt(Vector3D newTar);
 };
 
 #endif // TRANSFORM_H

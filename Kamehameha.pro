@@ -91,7 +91,8 @@ HEADERS += \
     fbxparser.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    outputdialog.ui
 
 DISTFILES += \
     ../ProjectTest/cube.obj

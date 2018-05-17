@@ -21,6 +21,7 @@
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QColorDialog>
+#include <QComboBox>
 
 #include "fbxsdk.h"
 #include "fbxsdk/scene/fbxscene.h"
@@ -69,10 +70,6 @@ private slots:
 
     void on_radioButton_4_clicked();
 
-    void on_lineEdit_camWidth_editingFinished();
-
-    void on_lineEdit_camHeight_editingFinished();
-
     void on_rb_ortho_clicked();
 
     void on_rb_persp_clicked();
@@ -96,6 +93,9 @@ private:
     QGraphicsScene *graphicsScene;
     QGraphicsView *graphicsView;
 
+    QComboBox *ui_resComboBox;
+    std::vector<std::pair<int, int>> resolutions;
+
     QLineEdit *ui_widthField;
     QLineEdit *ui_heightField;
 
@@ -106,6 +106,8 @@ private:
 
     enum State {rendering, paused, cancelled};
     State state = cancelled;
+
+    bool addResolution(const std::pair<int, int> res);
 
     bool importModel(const QString path, Model &model);
     QIcon getColoredIcon(int width, int height, const QColor color);

@@ -60,16 +60,17 @@ void FbxParser::processMesh(const FbxMesh *mesh, std::vector<Face*> &faces) {
             //TODO: what to do if these return false? Furthermore, how to handle unmapped = true?
             FbxVector2 uv1, uv2, uv3;
             bool um1, um2, um3;
-            mesh->GetPolygonVertexUV (i, 0, "Hehe", uv1, um1);
-            mesh->GetPolygonVertexUV (i, 1, "Hehe", uv2, um2);
-            mesh->GetPolygonVertexUV (i, 2, "Hehe", uv3, um3);
+            mesh->GetPolygonVertexUV (i, 0, "UVMap", uv1, um1);
+            mesh->GetPolygonVertexUV (i, 1, "UVMap", uv2, um2);
+            mesh->GetPolygonVertexUV (i, 2, "UVMap", uv3, um3);
 
+            qDebug() << um1 << ", " << um2 << ", " << um3;
             Vertex3D v1 = Vertex3D(Vector3D(p1[0], p1[1], p1[2]),
-                    Vector3D(n1[0], n1[1], n1[2]), Vector2D(uv1[0], uv1[1]));
+                    Vector3D(n1[0], n1[1], n1[2]).normalized (), Vector2D(uv1[0], uv1[1]));
             Vertex3D v2 = Vertex3D(Vector3D(p2[0], p2[1], p2[2]),
-                    Vector3D(n2[0], n2[1], n2[2]), Vector2D(uv2[0], uv2[1]));
+                    Vector3D(n2[0], n2[1], n2[2]).normalized (), Vector2D(uv2[0], uv2[1]));
             Vertex3D v3 = Vertex3D(Vector3D(p3[0], p3[1], p3[2]),
-                    Vector3D(n3[0], n3[1], n3[2]), Vector2D(uv3[0], uv3[1]));
+                    Vector3D(n3[0], n3[1], n3[2]).normalized (), Vector2D(uv3[0], uv3[1]));
 
             //                faces.push_back (new Triangle(v1, v2, v3, "None"));
 

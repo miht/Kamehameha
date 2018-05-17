@@ -2,8 +2,9 @@
 #define CAMERA_H
 
 #include "geometry.h"
+#include "transform.h"
 
-class Camera
+class Camera : public Transform
 {
 public:
     //TODO: FIND OUT A WAY TO CONVERT PROPERLY
@@ -19,15 +20,9 @@ public:
     float resGateAspectRatio = 4/3;
     float focalLength = 35;
     float depth = 3;
-    Matrix4x4 camToWorld;
 
     enum Mode {perspective, ortographic};
     Mode mode = ortographic;
-
-    Vector3D position = Vector3D(0,0,0);
-    Vector3D target = Vector3D(0,0,0);
-
-    Vector3D forward, right, up;
 
     Camera();
 
