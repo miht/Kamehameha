@@ -8,8 +8,8 @@ class RayTracer : public Tracer
 public:
     int subdivisions = 4;
 
-    RayTracer(Scene *scene);
-//    QImage generate(QProgressBar *progress, QImage image) override;
+    RayTracer(QWidget *parent, Scene *scene, Settings *settings);
+
     Color trace(Ray ray, int depth) override;
 
 private:

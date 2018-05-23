@@ -59,7 +59,10 @@ SOURCES += \
     geometry.cpp \
     transform.cpp \
     settings.cpp \
-    fbxparser.cpp
+    fbxparser.cpp \
+    aboutdialog.cpp \
+    renderview.cpp \
+    scenemetadata.cpp
 
 HEADERS += \
     vertex3d.h \
@@ -88,7 +91,10 @@ HEADERS += \
     geometry.h \
     transform.h \
     settings.h \
-    fbxparser.h
+    fbxparser.h \
+    aboutdialog.h \
+    renderview.h \
+    scenemetadata.h
 
 FORMS += \
         mainwindow.ui \
@@ -110,3 +116,7 @@ else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/'../../../.
 else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/'../../../../Applications/Autodesk/FBX SDK/2018.0/lib/clang/release/release/fbxsdk.lib'
 else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/'../../../../Applications/Autodesk/FBX SDK/2018.0/lib/clang/release/debug/fbxsdk.lib'
 else:unix: PRE_TARGETDEPS += $$PWD/'../../../../Applications/Autodesk/FBX SDK/2018.0/lib/clang/release/libfbxsdk.a'
+
+RESOURCES += \
+    images.qrc \
+    fonts.qrc

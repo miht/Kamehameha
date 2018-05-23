@@ -9,8 +9,8 @@
 class Wireframer : public Renderer
 {
 public:
-    Wireframer(Scene *scene);
-    QImage generate(QProgressBar *progress, QImage image) override;
+    Wireframer(QWidget *parent, Scene *scene, Settings *settings);
+    QImage generate( QImage image) override;
 
 
 private:

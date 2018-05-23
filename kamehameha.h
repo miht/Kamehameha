@@ -22,6 +22,9 @@
 #include <QMessageBox>
 #include <QColorDialog>
 #include <QComboBox>
+#include <QAction>
+#include <QMenuBar>
+#include <QButtonGroup>
 
 #include "fbxsdk.h"
 #include "fbxsdk/scene/fbxscene.h"
@@ -31,6 +34,7 @@
 #include <QFutureWatcher>
 
 #include "ui_mainwindow.h"
+#include "aboutdialog.h"
 #include "raytracer.h"
 #include "pathtracer.h"
 #include "wireframer.h"
@@ -48,9 +52,11 @@ class Kamehameha : public QMainWindow
     Q_OBJECT
 
 public:
-    Renderer *renderer;
-    QFutureWatcher<QImage> *watcher; //for parallell tracing
+    bool isRendering = false;
+
     Scene *scene;
+    Settings *settings;
+
     explicit Kamehameha(QWidget *parent = 0);
 
     static int showMessageDialog(QString title, QString message);
@@ -59,39 +65,33 @@ public:
 
 private slots:
     void on_renderButton_clicked();
-    void on_cancelButton_clicked();
-    void processImage(int index);
 
     void on_toolButton_clicked();
-
-    void on_radioButton_3_clicked();
-
-    void on_radioButton_clicked();
-
-    void on_radioButton_4_clicked();
 
     void on_rb_ortho_clicked();
 
     void on_rb_persp_clicked();
 
-    void applySettings();
-
     void on_btn_changeColor_clicked();
 
     void on_btn_changeColor_bkground_clicked();
 
-    void on_radioButton_2_clicked();
+    void show_about();
+
+    void on_rb_wireframe_clicked();
+
+    void on_rb_raster_clicked();
 
 private:
     Ui::MainWindow *ui;
     QPushButton *ui_renderButton;
     QPushButton *ui_cancelButton;
 
+    QGraphicsView *graphicsView;
+    QGraphicsScene *graphicsScene;
+
     QTextBrowser *ui_logBrowser;
     QProgressBar *ui_renderProgressBar;
-
-    QGraphicsScene *graphicsScene;
-    QGraphicsView *graphicsView;
 
     QComboBox *ui_resComboBox;
     std::vector<std::pair<int, int>> resolutions;
@@ -99,25 +99,25 @@ private:
     QLineEdit *ui_widthField;
     QLineEdit *ui_heightField;
 
+    QButtonGroup *bg_preview;
+    QButtonGroup *bg_tracing;
+    QButtonGroup *bg_camera_mode;
+
     QSlider *ui_sampleSlider;
     QSlider *ui_subdivisionSlider;
     QSlider *ui_depthSlider;
     QCheckBox *ui_globalIlluCheckbox;
 
-    enum State {rendering, paused, cancelled};
-    State state = cancelled;
+    QLabel *lbl_numVertices;
+    QLabel *lbl_numFaces;
 
     bool addResolution(const std::pair<int, int> res);
 
     bool importModel(const QString path, Model &model);
     QIcon getColoredIcon(int width, int height, const QColor color);
 
-    void startRender();
-    void cancelRender();
-    void pauseRender();
-    void resetRender();
-
-    void updateResolution();
+    void updateSettings();
+    void updatePreview();
 };
 
 #endif // MAINWINDOW_H

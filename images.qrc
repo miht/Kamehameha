@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/about">
+        <file>sun_icon</file>
+    </qresource>
+</RCC>

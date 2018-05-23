@@ -9,9 +9,9 @@
 class Rasterizer : public Renderer
 {
 public:
-    Rasterizer(Scene *scene);
+    Rasterizer(QWidget *parent, Scene *scene, Settings *settings);
     Rasterizer(int w, int h, Scene *scene);
-    QImage generate(QProgressBar *progress, QImage image) override;
+    QImage generate(QImage image) override;
 
 private:
 

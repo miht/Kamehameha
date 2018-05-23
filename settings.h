@@ -6,9 +6,20 @@
 class Settings
 {
 public:
+    //General
+    int width, height;
+    int depth = 2;
+    bool antiAliasing = false;
+    bool directLighting = true;
+    bool indirectLighting = false;
 
-    int subdivisions, depth, samples;
-    bool directLighting, indirectLighting, antiAliasing, globalIllumination;
+    //Ray/path exclusive
+    int subdivisions = 4;
+
+    //Path tracer
+    int samples = 32;
+    bool globalIllumination;
+
     Settings();
 };
 

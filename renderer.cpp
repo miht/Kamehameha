@@ -1,7 +1,7 @@
 #include "renderer.h"
 
-Renderer::Renderer(Scene *scene)
-    :   scene(scene)
+Renderer::Renderer(QWidget *parent, Scene *scene, Settings *settings)
+    :   QMainWindow(parent), scene(scene), settings(settings)
 {
 }
 
@@ -9,7 +9,12 @@ void Renderer::setScene(Scene *scene) {
     this->scene = scene;
 }
 
-QImage Renderer::generate(QProgressBar *progress, QImage image) {
+void Renderer::render() {
+    return;
+}
+
+
+QImage Renderer::generate(QImage image) {
     return image;
 }
 
@@ -19,8 +24,8 @@ QPointF convertToQPointF(Vector3D point) {
 
 //TODO TODO TODO
 Vector3D Renderer::viewportToWorld(const Vector2D vec) {
-    int width = scene->camera.viewportWidth;
-    int height = scene->camera.viewportHeight;
+    int width = viewportWidth;
+    int height = viewportHeight;
     float canvasWidth = (float)width/(float)height, canvasHeight = 1;
 
     Vector2D pNDC(vec.x / width, -vec.y/height + 1);
@@ -33,8 +38,8 @@ Vector3D Renderer::viewportToWorld(const Vector2D vec) {
 }
 
 Vector2D Renderer::worldToViewport(const Vector3D vec) {
-    int width = scene->camera.viewportWidth;
-    int height = scene->camera.viewportHeight;
+    int width = viewportWidth;
+    int height = viewportHeight;
     float canvasWidth = (float)width/(float)height, canvasHeight = 1;
 
     Matrix4x4 worldToCam;

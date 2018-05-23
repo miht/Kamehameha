@@ -1,17 +1,19 @@
 #include "wireframer.h"
 
-Wireframer::Wireframer(Scene *scene)
-    :   Renderer(scene)
+Wireframer::Wireframer(QWidget *parent, Scene *scene, Settings *settings)
+    :   Renderer(parent, scene, settings)
 {
     mode = Renderer::Wireframer;
 }
 
-QImage Wireframer::generate(QProgressBar *progress, QImage image) {
+QImage Wireframer::generate(QImage image) {
     // Plain PPM format
     //out << "P3\n" << w << ' ' << h << ' ' << "255\n";
+
     QPainter painter (&image);
     painter.fillRect (0,0,image.width (), image.height (), Qt::black);
     painter.setPen (Qt::white);
+
 
     // Iterate over all pixels in image
     for(Face* face : scene->model.root->faces) {

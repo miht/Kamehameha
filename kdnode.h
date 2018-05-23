@@ -20,7 +20,7 @@ public:
 
     bool hit(Ray &ray, float &t0, float &t1, Intersection &intersection);
 
-    KDNode* build(std::vector<Face*>& fcs, int depth);
+    static KDNode* build(std::vector<Face*> &fcs, int depth);
 };
 
 #endif // KDNODE_H

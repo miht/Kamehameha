@@ -8,7 +8,6 @@ Kamehameha::Kamehameha(QWidget *parent) :
 
     // get widgets
     ui_renderButton = findChild<QPushButton*>("renderButton");
-    ui_cancelButton = findChild<QPushButton*>("cancelButton");
     ui_logBrowser = findChild<QTextBrowser*>("logBrowser");
     ui_renderProgressBar = findChild<QProgressBar*>("renderProgressBar");
 
@@ -20,227 +19,141 @@ Kamehameha::Kamehameha(QWidget *parent) :
 
     ui_renderProgressBar->reset();
 
-    //Initialize graphic elements and configure the graphics view
-    graphicsScene = new QGraphicsScene(this);
     graphicsView = ui->graphicsView;
-    graphicsView->setSceneRect (0,0,graphicsView->width(), graphicsView->height ());
+    graphicsView->setSceneRect (0,0,graphicsView->width (),graphicsView->height ());
 
-    scene = new Scene(0.5, Color(1,1,1));
-    scene->camera.mode = Camera::perspective;
-    scene->camera.viewportWidth = graphicsView->width ();
-    scene->camera.viewportHeight = graphicsView->height();
+    menuBar ()->setNativeMenuBar (false);
+    QMenu *file = menuBar ()->addMenu (tr("File"));
+    QMenu *help = menuBar ()->addMenu(tr("Help"));
+    QAction *about = help->addAction(tr("About Helios"), this, SLOT(show_about()));
+    about->setStatusTip(tr("Show information about Helios"));
 
     //Configure combobox with available resolutions
     ui_resComboBox = ui->comboBox_resolution;
 
-    addResolution (std::make_pair(128, 128));
-    addResolution (std::make_pair(256, 256));
-    addResolution (std::make_pair(512, 512));
+    addResolution (std::make_pair(400, 300));
     addResolution (std::make_pair(800, 600));
     addResolution (std::make_pair(1024, 768));
     addResolution (std::make_pair(1366, 768));
     addResolution (std::make_pair(1920, 1080));
 
+    //button groups
+    bg_preview = new QButtonGroup(this);
+    bg_tracing = new QButtonGroup(this);
+    bg_camera_mode = new QButtonGroup(this);
+
+    //TODO assign these static global ID's instead of having hardcoded ones...
+    ui->rb_raster->setChecked(true);
+    bg_tracing->addButton (ui->rb_ray, 0);
+    bg_tracing->addButton (ui->rb_path, 1);
+
+    bg_preview->addButton (ui->rb_raster, 0);
+    bg_preview->addButton (ui->rb_wireframe, 1);
+
+    bg_camera_mode->addButton (ui->rb_ortho, 0);
+    bg_camera_mode->addButton (ui->rb_persp, 1);
+
     // configure progress bar
     ui_renderProgressBar->setMinimum(0);
-    ui_renderProgressBar->setMaximum(scene->camera.viewportWidth * scene->camera.viewportHeight);
+    //    ui_renderProgressBar->setMaximum(scene->camera.viewportWidth * scene->camera.viewportHeight);
 
-    //hide the cancel button
-    ui_cancelButton->setVisible(false);
-
-    //set to path rendering mode at the start
-    ui->radioButton->click();
-
+    //Initialize graphic elements and configure the graphics view
+    graphicsScene = new QGraphicsScene(this);
     graphicsView->setScene(graphicsScene);
 
-    //    scene->lights.push_back(Light(Vector3D(0,0,0), 1, Color(1, 1, 1)));
-
-    //    scene->lights.push_back(Light(Vector3D(1.5, 1.5, -0.5), 0.3, Color(1, 1, 1)));
-    //    scene->lights.push_back(Light(Vector3D(-0.5, -0.5, 2.5), 0.6, Color(1,1,1)));
-
-    //Initialize the watcher
-    watcher = new QFutureWatcher<QImage>();
+    //Settings
+    settings = new Settings();
+    //    updateSettings();
 }
 
 void Kamehameha::on_renderButton_clicked()
 {
-    //Enable the cancel button
-    if(state != rendering) {
-        if(state == paused) {
-            ui_renderButton->setText("Pause");
-            watcher->resume();
-            state = rendering;
-        }
-        else {
-            if(scene->model.root != NULL) {
-                //show the cancel button
-                ui_cancelButton->setVisible(true);
+    if(scene->isLoaded) {
 
-                //Reset the progress bar
-                ui_renderProgressBar->setValue(0);
-                startRender();
-                ui_renderButton->setText("Pause");
-                state = rendering;
-            }
-            else {
-                showMessageDialog ("Bög", "No objects found. Did you specify a non-empty .obj file?");
-            }
+        //Reset the progress bar
+        ui_renderProgressBar->setValue(0);
+        updateSettings();
+
+        Tracer *tracer;
+
+        switch(bg_tracing->checkedId ()) {
+        case 0: {
+            //Ray
+            //            tracer = RayTracer(&scene, settings);
+            qDebug() << "Ray tracing...";
+            tracer = new RayTracer(nullptr, scene, settings);
+            break;
         }
+        case 1: {
+            //Path
+            qDebug() << "Path tracing...";
+            tracer = new PathTracer(nullptr, scene, settings);
+            break;
+        }
+        default: {
+            break;
+        }
+        }
+
+        tracer->viewportWidth = settings->width;
+        tracer->viewportHeight = settings->height;
+
+        tracer->render ();
+        tracer->show ();
     }
     else {
-        ui_renderButton->setText("Resume");
-        watcher->pause();
-        state = paused;
+        showMessageDialog (tr("Bög!"), tr("No objects found. Please specify a non-empty model file."));
     }
-}
 
-void Kamehameha::on_cancelButton_clicked()
-{
-    cancelRender ();
-    resetRender();
-}
-
-/**
- * @brief Kamehameha::processImage scales the image and inserts it with the proper
- * offset within the graphicsview
- * @param index
- */
-void Kamehameha::processImage(int index) {
-    QImage img = watcher->resultAt(index);
-    float scaleX = graphicsView->width () / scene->camera.viewportWidth;
-    float scaleY = graphicsView->height () / scene->camera.viewportHeight;
-
-    float offsetX = img.offset().x() * scaleX;
-    float offsetY = img.offset().y() * scaleY;
-    ui_renderProgressBar->setValue(ui_renderProgressBar->value() + img.width() * img.height());
-
-    img = img.scaled (scaleX * img.width (), scaleY * img.height ());
-    QGraphicsPixmapItem* item = graphicsScene->addPixmap(QPixmap::fromImage (img));
-
-    item->setPos(offsetX, offsetY);
-
-    if(watcher->progressValue () >= watcher->progressMaximum ()) {
-        resetRender ();
-    }
-}
-
-void Kamehameha::startRender() {
-    QList<QImage> images; //the qtconcurrentmap will be applied to this list
-    applySettings();
-
-//    QWidget *outputWindow = new QWidget();
-//    QGraphicsView gv(outputWindow);
-//    outputWindow->setFixedSize(scene->camera.viewportWidth, scene->camera.viewportHeight);
-//    outputWindow->setSizePolicy (QSizePolicy::Fixed, QSizePolicy::Fixed);
-//    outputWindow->setWindowTitle ("Render output");
-//    outputWindow->show();
-
-    switch(renderer->mode) {
-    case Renderer::Pathtracer:
-    {
-        PathTracer* pt = dynamic_cast<PathTracer*>(renderer);
-        int subdivisions = ui->slider_subdivision->value ();
-        pt->depth = ui->slider_depth->value ();
-        pt->samples = ui->slider_samples->value ();
-        pt->globalIllumination = ui->checkbox_global_illu->checkState () == Qt::Checked;
-        pt->antiAliasing = ui->checkbox_anti_alias->checkState () == Qt::Checked;
-
-        for(int i = 0; i < scene->camera.viewportWidth; i+= scene->camera.viewportWidth/subdivisions) {
-            for(int j = 0; j < scene->camera.viewportHeight; j += scene->camera.viewportHeight/subdivisions) {
-                QImage img = QImage(scene->camera.viewportWidth/subdivisions, scene->camera.viewportHeight/subdivisions, QImage::Format_RGB32);
-                img.setOffset(QPoint(i, j));
-                images << img;
-            }
-        }
-        std::function<QImage(const QImage&)> rendered = [this,pt](const QImage &image) -> QImage
-        {
-            return pt->generate(this->ui_renderProgressBar, image);
-        };
-
-        connect(watcher, SIGNAL(resultReadyAt(int)), this, SLOT(processImage(int)));
-        watcher->setFuture (QtConcurrent::mapped(images, rendered));
-        break;
-    }
-    case Renderer::Raytracer:
-    {
-        RayTracer* rt = dynamic_cast<RayTracer*>(renderer);
-        int subdivisions = ui->slider_subdivision->value ();
-        rt->depth = ui->slider_depth->value ();
-        rt->antiAliasing = ui->checkbox_anti_alias->checkState () == Qt::Checked;
-
-        for(int i = 0; i < scene->camera.viewportWidth; i+= scene->camera.viewportWidth/subdivisions) {
-            for(int j = 0; j < scene->camera.viewportHeight; j += scene->camera.viewportHeight/subdivisions) {
-                QImage img = QImage(scene->camera.viewportWidth/subdivisions, scene->camera.viewportHeight/subdivisions, QImage::Format_RGB32);
-                img.setOffset(QPoint(i, j));
-                images << img;
-            }
-        }
-
-        std::function<QImage(const QImage&)> rendered = [this,rt](const QImage &image) -> QImage
-        {
-            return rt->generate(this->ui_renderProgressBar, image);
-        };
-
-        connect(watcher, SIGNAL(resultReadyAt(int)), this, SLOT(processImage(int)));
-        watcher->setFuture (QtConcurrent::mapped(images, rendered));
-        break;
-    }
-    case Renderer::Rasterizer:
-    {
-        Rasterizer* r = dynamic_cast<Rasterizer*>(renderer);
-        QImage image(scene->camera.viewportWidth, scene->camera.viewportHeight, QImage::Format_ARGB32);
-
-        float scaleX = graphicsView->width () / scene->camera.viewportWidth;
-        float scaleY = graphicsView->height () / scene->camera.viewportHeight;
-
-        graphicsScene->addPixmap (QPixmap::fromImage(r->generate (ui_renderProgressBar, image).scaled (scaleX * image.width (), scaleY * image.height ())));
-
-        break;
-    }
-    case Renderer::Wireframer:
-    {
-        Wireframer* wf = dynamic_cast<Wireframer*>(renderer);
-        QImage image(scene->camera.viewportWidth, scene->camera.viewportHeight, QImage::Format_ARGB32);
-        float scaleX = graphicsView->width () / scene->camera.viewportWidth;
-        float scaleY = graphicsView->height () / scene->camera.viewportHeight;
-
-        graphicsScene->addPixmap (QPixmap::fromImage(wf->generate (ui_renderProgressBar, image).scaled (scaleX * image.width (), scaleY * image.height ())));
-
-        break;
-    }
-    default:
-    {
-        break;
-    }
-    }
-}
-
-void Kamehameha::cancelRender () {
-    watcher->cancel ();
-}
-
-void Kamehameha::pauseRender () {
-    qDebug() << "Pausing";
-    state = paused;
-}
-
-void Kamehameha::resetRender () {
-    state = cancelled;
-    ui_renderProgressBar->reset ();
-    ui_cancelButton->setVisible(false);
-    ui_renderButton->setText("Render");
 }
 
 Kamehameha::~Kamehameha()
 {
-    delete watcher;
-    delete renderer;
-    delete scene->model.root;
     delete scene;
+    delete settings;
+
     delete ui;
 }
 
-void Kamehameha::updateResolution () {
+void Kamehameha::updatePreview() {
+    Renderer *preview;
+
+    qDebug() << bg_preview->checkedId ();
+    switch(bg_preview->checkedId ()) {
+    case 0:
+    {
+        //Raster
+        qDebug() << "Raster";
+
+        preview = new Rasterizer(this, scene, settings);
+        break;
+    }
+    case 1:
+    {
+        //Wireframe
+        qDebug() << "Wireframe";
+
+        preview = new Wireframer(this, scene, settings);
+        break;
+    }
+    default:
+    {
+        qDebug() << "How?" ;
+        break;
+    }
+    }
+
+    preview->viewportWidth = graphicsView->width ();
+    preview->viewportHeight = graphicsView->height ();
+
+    QImage image(graphicsView->width (), graphicsView->height(), QImage::Format_ARGB32);
+    qDebug() << graphicsView->width ();
+
+    QPixmap pix = QPixmap::fromImage(preview->generate (image));
+
+    graphicsScene->addPixmap (pix);
+
+    preview->deleteLater ();
 }
 
 void Kamehameha::on_toolButton_clicked()
@@ -259,39 +172,24 @@ void Kamehameha::on_toolButton_clicked()
     file = info.absoluteFilePath ();
     dir = info.absolutePath () + "/";
 
-    //    scene->model = ObjParser::parse(dir, file);
-    //    scene->model = importModel (file);
     bool imported = importModel (file, scene->model);
+
+    ui->lineEdit_path->setText (file);
+    ui->lbl_faces->setText (QString::number(scene->model.metadata.numFaces));
+    ui->lbl_vertices->setText(QString::number(scene->model.metadata.numVertices));
+    ui->lbl_lights->setText(QString::number(scene->model.metadata.numLights));
+    ui->lbl_materials->setText(QString::number(scene->model.metadata.numMaterials));
 
     //    ui->btn_lightColor->setIcon (getColoredIcon (100, 100, Color((scene->ambient_color.asVector3D ()*scene->ambient_intensity)).asQColor ());
     //    ui->btn_lightColor_bkground->setIcon (getColoredIcon (100, 100, scene->ambient_color*scene->ambient_intensity));
 
-    //    ui->lbl_edges->setText ("" + 0);
-    //    ui->lbl_faces->setText("" + scene->model.root->faces.size());
+
 }
 
-//Path
-void Kamehameha::on_radioButton_clicked()
-{
-    renderer = new PathTracer(scene);
-}
-
-//RayTracer
-void Kamehameha::on_radioButton_3_clicked()
-{
-    renderer = new RayTracer(scene);
-}
-
-
-//Wireframe
-void Kamehameha::on_radioButton_4_clicked()
-{
-    renderer = new Wireframer(scene);
-}
-
-void Kamehameha::on_radioButton_2_clicked()
-{
-    renderer = new Rasterizer(scene);
+void Kamehameha::show_about () {
+    //    showMessageDialog (tr("About Helios"), tr("Helios (2018) is a graphics engine developed by KTH students Anders Eriksson and Leif T. Sundkvist."));
+    AboutDialog aboutDialog(this);
+    aboutDialog.exec ();
 }
 
 int Kamehameha::showMessageDialog(QString title, QString message) {
@@ -311,16 +209,46 @@ void Kamehameha::on_rb_persp_clicked()
     scene->camera.mode = Camera::perspective;
 }
 
-void Kamehameha::applySettings() {
+void Kamehameha::updateSettings() {
     //Attempt to parse numbers
+    qDebug() << "T1";
+
     bool ok = true;
 
+    //Settings
     std::pair<int, int> resolution = resolutions[ui_resComboBox->currentIndex ()];
-    int w = resolution.first;
-    int h = resolution.second;
-    scene->camera.viewportWidth = w;
-    scene->camera.viewportHeight = h;
+    settings->width = resolution.first;
+    settings->height = resolution.second;
+    settings->subdivisions = ui->slider_subdivision->value ();
+
+    settings->depth = ui->slider_depth->value ();
+    settings->samples = ui->slider_samples->value ();
+
+    settings->globalIllumination = ui->checkbox_global_illu->checkState () == Qt::Checked;
+    settings->antiAliasing = ui->checkbox_anti_alias->checkState () == Qt::Checked;
+
+    //Scene
+    qDebug() << "T1.5";
+
+    //Camera
+    qDebug() << scene->camera.angleOfView;
+    scene->camera.viewportWidth = settings->width; //These two redundant? perhaps TOOD remove?
+
+    scene->camera.viewportHeight = settings->height;
     scene->camera.angleOfView = ui->lineEdit_fov->text ().toInt(&ok, 10);
+
+
+    switch(bg_camera_mode->checkedId ()) {
+    case 0: {
+        //Orthographic
+        scene->camera.mode = Camera::ortographic;
+    }
+    case 1: {
+        //Perspective
+        scene->camera.mode = Camera::perspective;
+    }
+    }
+
     bool ambient_intensity = ((float)ui->slider_ambientIntensity->value() / (float)ui->slider_ambientIntensity->maximum ());
 
     float camTranslateX = ui->lineEdit_posX->text().toFloat (&ok);
@@ -331,6 +259,7 @@ void Kamehameha::applySettings() {
     float camRotateY = ui->lineEdit_rotY->text().toFloat (&ok);
     float camRotateZ = ui->lineEdit_rotZ->text().toFloat (&ok);
 
+
     Matrix4x4 translation = Matrix4x4::translation (Vector3D(camTranslateX,
                                                              camTranslateY,
                                                              camTranslateZ));
@@ -340,6 +269,8 @@ void Kamehameha::applySettings() {
                                                        camRotateZ * M_PI/180));
 
     scene->camera.world = translation * rotation;
+    qDebug() << "T2";
+
 }
 
 void Kamehameha::on_btn_changeColor_clicked()
@@ -373,7 +304,7 @@ bool Kamehameha::addResolution(const std::pair<int, int> res) {
 }
 
 bool Kamehameha::importModel(const QString path, Model &model) {
-    qDebug() << "Attempting to import FBX\n";
+    qDebug() << "Attempting to import FBX.";
 
     // Create the FBX SDK manager
     FbxManager* lSdkManager = FbxManager::Create();
@@ -416,38 +347,28 @@ bool Kamehameha::importModel(const QString path, Model &model) {
     // The file has been imported; we can get rid of the importer.
     lImporter->Destroy();
 
-    //triangulate scene
+    qDebug() << "FBX file loaded.";
+
     FbxGeometryConverter conv(lSdkManager);
     conv.Triangulate (lScene, true);
 
-    FbxNode* root = lScene->GetRootNode ();
-    std::vector<Face*> faces;
-    std::vector<Light> lights;
-    std::vector<Material> materials;
+    //Initialize scene
 
-    FbxParser::process(root, faces, lights, scene->model.materials);
+    scene = new Scene(0.5, Color(1,1,1));
 
-    //    FbxParser::processMaterials (root, materials);
-
+    FbxNode* fbxRoot = lScene->GetRootNode ();
     scene->model.root = new KDNode();
-    scene->model.root = scene->model.root->build(faces, 0);
-    scene->lights = lights;
 
+    FbxParser::process(fbxRoot, scene);
 
-    //    FbxMesh*mesh = root->GetMesh ();
+    qDebug() << scene->model.root->faces.size();
 
+    scene->model.root = KDNode::build(scene->model.root->faces, 0);
 
-    //    model.numberOfFaces = mesh->GetPolygonCount ();
-    //    model.numberOfVertices = mesh->GetPolygonVertexCount ();
+    updateSettings();
+    updatePreview();
 
-    //    qDebug() << "Test 2";
-
-    //    //Create the triangles. TODO: transition entirely to using FBX polygons instead of our native geometry?
-    //    std::vector<Face*> faces;
-
-    //    qDebug() << "Test 3";
-
-
+    qDebug() << "FBX scene successfully parsed.";
 
     return true;
 }
@@ -459,3 +380,12 @@ QIcon Kamehameha::getColoredIcon(int width, int height, const QColor color) {
     return icon;
 }
 
+void Kamehameha::on_rb_wireframe_clicked()
+{
+    updatePreview ();
+}
+
+void Kamehameha::on_rb_raster_clicked()
+{
+    updatePreview();
+}

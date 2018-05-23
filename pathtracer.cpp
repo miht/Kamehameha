@@ -4,8 +4,8 @@
 #include <QThread>
 #include <QProgressBar>
 
-PathTracer::PathTracer(Scene *scene)
-    :   Tracer(scene)
+PathTracer::PathTracer(QWidget *parent, Scene *scene, Settings *settings)
+    :   Tracer(parent, scene, settings)
 {
     mode = Tracer::Pathtracer;
 }
@@ -54,8 +54,8 @@ Color PathTracer::trace(Ray ray, int depth) {
         cDir = cDiff + cSpec;
 
         Vector3D cIndir;
-        if(globalIllumination) {
-            uint32_t N = samples / (depth + 1);
+        if(settings->globalIllumination) {
+            uint32_t N = settings->samples / (depth + 1);
             Vector3D Nt, Nb;
             createCoordinateSystem(normal, Nt, Nb);
             float pdf = 1 / (2 * M_PI);

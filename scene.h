@@ -12,6 +12,7 @@
 class Scene
 {
 public:
+    bool isLoaded = false;
     float ambient_intensity = 0.2;
     Color ambient_color;
     Color background_color;

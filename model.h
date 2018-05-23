@@ -8,13 +8,16 @@
 #include "material.h"
 #include "object.h"
 #include "kdnode.h"
+#include "scenemetadata.h"
 
 class Model
 {
 public:
     int numberOfVertices, numberOfEdges, numberOfFaces;
+    SceneMetadata metadata;
     QMap<const char*, Material> materials;
     std::vector<Object> objects;
+
     KDNode* root;
 
     Model();

@@ -1,27 +1,28 @@
 #include "rasterizer.h"
 
-Rasterizer::Rasterizer(Scene *scene)
-    :   Renderer(scene)
+Rasterizer::Rasterizer(QWidget *parent, Scene *scene, Settings *settings)
+    :   Renderer(parent, scene, settings)
 {
     mode = Renderer::Rasterizer;
 }
 
-QImage Rasterizer::generate(QProgressBar *progress, QImage image) {
+QImage Rasterizer::generate(QImage image) {
     // Plain PPM format
     //out << "P3\n" << w << ' ' << h << ' ' << "255\n";
-
     image.fill(QColor(0, 0, 0));
 
     Matrix4x4 camToWorld = scene->camera.world;
+
     Matrix4x4 worldToCam;
     Matrix4x4::inverse(camToWorld, worldToCam);
 
-    int zDepthSize = scene->camera.viewportWidth*scene->camera.viewportHeight;
+    int zDepthSize = image.width () * image.height ();
     float depthBuffer[zDepthSize];
     std::fill_n(depthBuffer, zDepthSize, (float) INT_MAX);
 
     // Iterate over all pixels in image
     for(Face* face : scene->model.root->faces) {
+
         Material m = scene->model.materials.value (face->material);
         Vertex3D v1 = face->vertices[0];
         Vertex3D v2 = face->vertices[1];
@@ -60,6 +61,7 @@ QImage Rasterizer::generate(QProgressBar *progress, QImage image) {
         float area = edgeFunction(p1, p2, p3);
         for (int x = std::roundf(min.x); x <= max.x; ++x) {
             for (int y = std::roundf(min.y); y <= max.y; ++y) {
+
                 // the pixel is out of screen
                 if (x > image.width () - 1 || x < 0 || y < 0 || y > image.height () - 1)
                     continue;
@@ -78,8 +80,10 @@ QImage Rasterizer::generate(QProgressBar *progress, QImage image) {
                     float z = 1 / oneOverZ;
 
                     if(z < cameraZ) continue;
-                    if (z < depthBuffer[y * image.width ()+ x]) {
-                        depthBuffer[y * image.height ()+ x] = z;
+
+                    if (z < depthBuffer[y * image.width () + x]) {
+
+                        depthBuffer[y * image.width () + x] = z;
 
                         Vector2D uv = uv1 * w0 + uv2 * w1 + uv3 * w2;
 
@@ -89,6 +93,8 @@ QImage Rasterizer::generate(QProgressBar *progress, QImage image) {
                         p1Cam = worldToCam * v1.position;
                         p2Cam = worldToCam * v2.position;
                         p3Cam = worldToCam * v3.position;
+
+
 
                         float px = (p1Cam.x/-p1Cam.z) * w0 + (p2Cam.x/-p2Cam.z) * w1 + (p3Cam.x/-p3Cam.z) * w2;
                         float py = (p1Cam.y/-p1Cam.z) * w0 + (p2Cam.y/-p2Cam.z) * w1 + (p3Cam.y/-p3Cam.z) * w2;

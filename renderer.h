@@ -1,23 +1,32 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include <QObject>
 #include <QProgressBar>
 #include <QImage>
 #include <QPixmap>
 #include <QPainter>
+#include <QMainWindow>
 
-#include "scene.h"
 #include "geometry.h"
+#include "scene.h"
+#include "settings.h"
 
-class Renderer
+class Renderer : public QMainWindow
 {
 public:
     enum Mode {Raytracer, Pathtracer, Rasterizer, Wireframer};
     Mode mode;
-    Scene *scene;
 
-    Renderer(Scene *scene);
-    virtual QImage generate(QProgressBar *progress, QImage image);
+    int viewportWidth = 512;
+    int viewportHeight = 512;
+
+    Scene *scene;
+    Settings *settings;
+
+    Renderer(QWidget *parent, Scene *scene, Settings *settings);
+    virtual void render();
+    virtual QImage generate(QImage image);
 
     void setScene(Scene *scene);
 

@@ -16,11 +16,8 @@
 class PathTracer : public Tracer
 {
 public:
-    int subdivisions = 4;
-    int samples = 16;
-    bool globalIllumination = false;
+    PathTracer(QWidget *parent, Scene *scene, Settings *settings);
 
-    PathTracer(Scene *scene);
     Color trace(Ray ray, int depth) override;
 
 private:

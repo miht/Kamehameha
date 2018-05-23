@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/general">
+        <file>Merriweather-Black.ttf</file>
+        <file>Merriweather-BlackItalic.ttf</file>
+        <file>Merriweather-Bold.ttf</file>
+        <file>Merriweather-BoldItalic.ttf</file>
+        <file>Merriweather-Italic.ttf</file>
+        <file>Merriweather-Light.ttf</file>
+        <file>Merriweather-LightItalic.ttf</file>
+        <file>Merriweather-Regular.ttf</file>
+    </qresource>
+</RCC>

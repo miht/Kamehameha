@@ -3,8 +3,8 @@
 #include <QThread>
 #include <QProgressBar>
 
-RayTracer::RayTracer(Scene *scene)
-    :   Tracer(scene)
+RayTracer::RayTracer(QWidget *parent, Scene *scene, Settings *settings)
+    :   Tracer(parent, scene, settings)
 {
     mode = Tracer::Raytracer;
 }
