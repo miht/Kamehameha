@@ -11,8 +11,8 @@ class Vector2D
 {
 public:
     float x, y;
-    Vector2D();
     Vector2D(float x, float y);
+    Vector2D();
 
     Vector2D operator+(const Vector2D v) const;
     Vector2D operator-(const Vector2D v) const;
@@ -59,6 +59,29 @@ public:
     friend QDebug operator<< (QDebug d, const Vector3D &v);
 };
 
+class Vector4D
+{
+public:
+    float x, y, z, w;
+    Vector4D();
+    Vector4D(Vector2D v);
+    Vector4D(Vector3D v);
+    Vector4D(float x, float y, float z, float w);
+
+    Vector2D asVector2D();
+    Vector3D asVector3D();
+
+    Vector4D operator+(const Vector4D v) const;
+    Vector4D operator-(const Vector4D v) const;
+    Vector4D operator-() const;
+    Vector4D operator*(const Vector4D v) const;
+    Vector4D operator*(const float s) const;
+    Vector4D operator/(const float d) const;
+
+    friend std::ostream& operator<<(std::ostream& Str, const Vector4D& v);
+    friend QDebug operator<< (QDebug d, const Vector4D &v);
+};
+
 //commutativity
 Vector3D operator*(const float s, const Vector3D v);
 
@@ -75,11 +98,13 @@ public:
     static Matrix4x4 translation(const Vector3D v);
     static Matrix4x4 rotation(const Vector3D v);
     static bool inverse(Matrix4x4 mat, Matrix4x4 &out);
+    static bool transpose(Matrix4x4 mat, Matrix4x4 &out);
 
     float& operator()(const int i, const int j);
 
     Matrix4x4 operator*(Matrix4x4 m);
     Vector3D operator*(const Vector3D v);
+    Vector4D operator*(const Vector4D v);
 
     friend std::ostream& operator<<(std::ostream& Str, Matrix4x4& v);
     friend QDebug operator<<(QDebug d, Matrix4x4 &m);

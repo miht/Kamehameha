@@ -14,6 +14,19 @@ QImage Wireframer::generate(QImage image) {
     painter.fillRect (0,0,image.width (), image.height (), Qt::black);
     painter.setPen (Qt::white);
 
+    float b, t, l, r;
+    float near = scene->camera.clippingPlane[0];
+    float far = scene->camera.clippingPlane[1];
+    calculatePerspective (scene->camera.angleOfView,
+                          viewportWidth/(float) viewportHeight,
+                          near, far, b, t, l, r);
+    projMatrix = getPerspectiveFrustrum(b, t, l, r, near, far);
+
+    Matrix4x4 camToWorld = scene->camera.world;
+
+    Matrix4x4 worldToCam;
+    Matrix4x4::inverse(camToWorld, worldToCam);
+
 
     // Iterate over all pixels in image
     for(Face* face : scene->model.root->faces) {
@@ -21,7 +34,10 @@ QImage Wireframer::generate(QImage image) {
 
         int vertices = face->getPoints ().size();
         for(size_t i = 0; i < vertices; i++) {
-            points.push_back (worldToViewport (face->getPoints ()[i]));
+
+            Vector3D pCam = worldToCam * face->getPoints ()[i];
+            Vector2D pView = worldToViewport (projMatrix * pCam).asVector2D ();
+            points.push_back (pView);
         }
 
         drawEdges(painter, points);

@@ -79,8 +79,13 @@ private slots:
     void show_about();
 
     void on_rb_wireframe_clicked();
-
     void on_rb_raster_clicked();
+    void on_lineEdit_posX_editingFinished();
+    void on_lineEdit_posY_editingFinished();
+    void on_lineEdit_posZ_editingFinished();
+    void on_lineEdit_rotX_editingFinished();
+    void on_lineEdit_rotY_editingFinished();
+    void on_lineEdit_rotZ_editingFinished();
 
 private:
     Ui::MainWindow *ui;

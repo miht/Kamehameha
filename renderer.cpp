@@ -37,22 +37,48 @@ Vector3D Renderer::viewportToWorld(const Vector2D vec) {
     return pos;
 }
 
-Vector2D Renderer::worldToViewport(const Vector3D vec) {
-    int width = viewportWidth;
-    int height = viewportHeight;
-    float canvasWidth = (float)width/(float)height, canvasHeight = 1;
+Vector3D Renderer::worldToViewport(const Vector3D vec) {
+    Vector3D ret;
+    ret.x = (vec.x + 1) * 0.5 * viewportWidth;
+    ret.y = (1 - (vec.y + 1) * 0.5) * viewportHeight;
+    ret.z = vec.z;
+    return ret;
+}
 
-    Matrix4x4 worldToCam;
-    bool inverted = Matrix4x4::inverse(scene->camera.world, worldToCam);
+void Renderer::setProjectionMatrix() {
+    float fov = scene->camera.angleOfView;
+    float near = scene->camera.clippingPlane[0];
+    float far = scene->camera.clippingPlane[1];
 
-    Vector3D pCamera = worldToCam*vec;
-    Vector2D pScreen(pCamera.x / -pCamera.z, pCamera.y / -pCamera.z);
-    Vector2D pNDC((pScreen.x + canvasWidth * 0.5) / canvasWidth, (pScreen.y + canvasHeight * 0.5) / canvasHeight);
+    float scale = 1.0 / tanf(fov * 0.5f * M_PI / 180);
+    projMatrix(0, 0) = scale;
+    projMatrix(1, 1) = scale;
+    projMatrix(2, 2) = -far / (far - near);
+    projMatrix(3, 2) = -far * near / (far - near);
+    projMatrix(2, 3) = -1;
+    projMatrix(3, 3) = 0;
+}
 
-    int pX = (int)(pNDC.x * width);
-    int pY = (int)((1 - pNDC.y) * height);
+void Renderer::calculatePerspective(const float angleOfView, const float imageAspectRatio, const float n,
+                                    const float f, float &b, float &t, float &l, float &r) {
+    float scale = tanf(angleOfView * 0.5 * M_PI / 180) *n;
+    r = imageAspectRatio * scale;
+    l = -r;
+    t = scale;
+    b = -t;
+}
 
-    return Vector2D(pX, pY);
+Matrix4x4 Renderer::getPerspectiveFrustrum(float b, float t, float l, float r, float n, float f) {
+    Matrix4x4 mat;
+    mat(0, 0) = 2 * n / (r - l);
+    mat(1, 1) = 2 * n / (t - b);
+    mat(2, 0) = (r + l) / (r - l);
+    mat(2, 1) = (t + b) / (t - b);
+    mat(2, 2) = -(f + n) / (f - n);
+    mat(2, 3) = -1;
+    mat(3, 2) = -2 * f * n / (f - n);
+
+    return mat;
 }
 
 float Renderer::edgeFunction(const Vector3D v1, const Vector3D v2, const Vector3D c) {

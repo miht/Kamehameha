@@ -60,6 +60,45 @@ Vector3D::Vector3D()
     z = 0;
 }
 
+Vector3D Vector3D::operator+(const Vector3D v) const {
+    return Vector3D(x + v.x, y + v.y, z + v.z);
+}
+
+Vector3D Vector3D::operator-(const Vector3D v) const {
+    return Vector3D(x - v.x, y - v.y, z - v.z);
+}
+
+Vector3D Vector3D::operator-() const {
+    return Vector3D(-x, -y, -z);
+}
+
+Vector3D Vector3D::operator*(const Vector3D v) const {
+    return Vector3D(x*v.x, y*v.y, z*v.z);
+}
+
+Vector3D Vector3D::operator*(const float s) const {
+    return Vector3D(s * x, s * y, s * z);
+}
+
+Vector3D Vector3D::operator/(const float d) const {
+    return Vector3D(x/d, y/d, z/d);
+}
+
+//commutativity
+Vector2D operator*(const float s, const Vector2D v) {
+    return v * s;
+}
+
+//commutativity
+Vector3D operator*(const float s, const Vector3D v) {
+    return v * s;
+}
+
+//commutativity
+Vector4D operator*(const float s, const Vector4D v) {
+    return v * s;
+}
+
 float Vector3D::norm()
 {
     return sqrt(x * x + y * y + z * z);
@@ -118,33 +157,67 @@ QDebug operator<<(QDebug d, const Vector3D &v) {
     return d << "(" << v.x << ", " << v.y << ", " << v.z << ")";
 }
 
-Vector3D Vector3D::operator+(const Vector3D v) const {
-    return Vector3D(x + v.x, y + v.y, z + v.z);
+Vector4D::Vector4D(float x, float y, float z, float w)
+    :   x(x), y(y), z(z), w(w)
+{
 }
 
-Vector3D Vector3D::operator-(const Vector3D v) const {
-    return Vector3D(x - v.x, y - v.y, z - v.z);
+Vector2D Vector4D::asVector2D () {
+    return Vector2D(x, y);
 }
 
-Vector3D Vector3D::operator-() const {
-    return Vector3D(-x, -y, -z);
+Vector3D Vector4D::asVector3D () {
+    return Vector3D(x, y, z);
 }
 
-Vector3D Vector3D::operator*(const Vector3D v) const {
-    return Vector3D(x*v.x, y*v.y, z*v.z);
+Vector4D::Vector4D()
+{
+    x = 0;
+    y = 0;
+    z = 0;
+    w = 0;
 }
 
-Vector3D Vector3D::operator*(const float s) const {
-    return Vector3D(s * x, s * y, s * z);
+Vector4D::Vector4D(Vector2D v)
+    :   Vector4D(Vector3D(v))
+{
 }
 
-Vector3D Vector3D::operator/(const float d) const {
-    return Vector3D(x/d, y/d, z/d);
+Vector4D::Vector4D(Vector3D v)
+    :   x(v.x), y(v.y), z(v.z), w(0)
+{
 }
 
-//commutativity
-Vector3D operator*(const float s, const Vector3D v) {
-    return v * s;
+Vector4D Vector4D::operator+(const Vector4D v) const {
+    return Vector4D(x + v.x, y + v.y, z + v.z, w + v.w);
+}
+
+Vector4D Vector4D::operator-(const Vector4D v) const {
+    return Vector4D(x - v.x, y - v.y, z - v.z, w - v.w);
+}
+
+Vector4D Vector4D::operator-() const {
+    return Vector4D(-x, -y, -z, -w);
+}
+
+Vector4D Vector4D::operator*(const Vector4D v) const {
+    return Vector4D(x*v.x, y*v.y, z*v.z, w*v.w);
+}
+
+Vector4D Vector4D::operator*(const float s) const {
+    return Vector4D(s * x, s * y, s * z, s * w);
+}
+
+Vector4D Vector4D::operator/(const float d) const {
+    return Vector4D(x/d, y/d, z/d, w/d);
+}
+
+std::ostream & operator<<(std::ostream & Str, const Vector4D& v) {
+    return Str << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")\n";
+}
+
+QDebug operator<<(QDebug d, const Vector4D &v) {
+    return d << "(" << v.x << ", " << v.y << ", " << v.z << ", " <<  v.w << ")\n";
 }
 
 //Vector interpolation
@@ -338,12 +411,21 @@ bool Matrix4x4::inverse(Matrix4x4 mat, Matrix4x4 &out) {
     return true;
 }
 
+bool Matrix4x4::transpose(Matrix4x4 mat, Matrix4x4 &out) {
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 4; j++) {
+            out(j, i) = mat(i, j);
+        }
+    }
+    return true;
+}
+
 float& Matrix4x4::operator()(const int i, const int j) {
     return elements[i * 4 + j];
 }
 
 Vector3D Matrix4x4::operator*(const Vector3D v) {
-    float x[4] = {v.x,v.y,v.z,1};
+    float x[4] = {v.x, v.y, v.z, 1};
     float res[4] = {0,0,0,0};
 
     for(int i = 0; i < 4; i++) {
@@ -351,7 +433,26 @@ Vector3D Matrix4x4::operator*(const Vector3D v) {
             res[i] += (*this)(i, j) * x[j];
         }
     }
-    return Vector3D(res[0], res[1], res[2]);
+//    Vector4D ret(res[0], res[1], res[2], res[3]);
+
+//    ret = ret / ret.w;
+    return Vector3D(res[0]/res[3], res[1]/res[3], res[2]/res[3]);
+}
+
+Vector4D Matrix4x4::operator*(const Vector4D v) {
+    float x[4] = {v.x, v.y, v.z, v.w};
+    float res[4] = {0,0,0,0};
+
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 4; j++) {
+            res[i] += (*this)(i, j) * x[j];
+        }
+    }
+
+    Vector4D ret(res[0], res[1], res[2], res[3]);
+
+    ret = ret / ret.w;
+    return ret;
 }
 
 Matrix4x4 Matrix4x4::operator*(Matrix4x4 m) {

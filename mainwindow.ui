@@ -1454,7 +1454,7 @@
                   <item row="0" column="2">
                    <widget class="QLineEdit" name="lineEdit_posY">
                     <property name="text">
-                     <string>-2</string>
+                     <string>-4</string>
                     </property>
                     <property name="placeholderText">
                      <string>Y</string>
@@ -1544,7 +1544,7 @@
                   <item row="0" column="0">
                    <widget class="QLineEdit" name="lineEdit_fov">
                     <property name="text">
-                     <string>45</string>
+                     <string>90</string>
                     </property>
                    </widget>
                   </item>

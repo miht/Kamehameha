@@ -76,8 +76,8 @@ QImage Tracer::generate(QImage image)
     //Calculate screen coordinates here
     float width = (float) scene->camera.viewportWidth;
     float height = (float) scene->camera.viewportHeight;
-    float fov = scene->camera.angleOfView;
     float imageAspectRatio = width / height;
+    float fov = scene->camera.angleOfView;
     float scale = tanf((fov * 0.5 * M_PI)/180.0);
     float focalLength = scene->camera.focalLength;
 
@@ -90,8 +90,24 @@ QImage Tracer::generate(QImage image)
             Color col;
 
             Vector3D p = viewportToWorld (Vector2D(x + image.offset ().x (), y + image.offset ().y()));
-            Vector3D dir = (p - rayOrigin).normalized();
+            Vector3D dir;
 
+            Vector3D camForward(camToWorld(2, 0), camToWorld(2, 1), camToWorld(2, 2));
+            camForward = camForward.normalized ();
+
+
+            if(scene->camera.mode == Camera::perspective) {
+                dir = (p - rayOrigin);
+            }
+            else {
+                rayOrigin = (camToWorld * p);
+                dir = camForward;
+//                dir = camToWorld*Vector3D(0,1,0); //forward
+            }
+//            qDebug() << "origin " << rayOrigin;
+//            qDebug() << "cam forward " << camForward;
+
+            dir = dir.normalized ();
             Ray ray;
             ray = Ray(rayOrigin, dir);
 

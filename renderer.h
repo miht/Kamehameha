@@ -18,6 +18,8 @@ public:
     enum Mode {Raytracer, Pathtracer, Rasterizer, Wireframer};
     Mode mode;
 
+    Matrix4x4 projMatrix;
+
     int viewportWidth = 512;
     int viewportHeight = 512;
 
@@ -32,7 +34,11 @@ public:
 
 protected:
     Vector3D viewportToWorld(const Vector2D vec);
-    Vector2D worldToViewport(const Vector3D vec);
+    Vector3D worldToViewport(const Vector3D vec);
+    void setProjectionMatrix();
+    void calculatePerspective(const float angleOfView, const float imageAspectRatio, const float n,
+                              const float f, float &b, float &t, float &l, float &r);
+    Matrix4x4 getPerspectiveFrustrum(float b, float t, float l, float r, float n, float f);
 
     float edgeFunction(const Vector3D v1, const Vector3D v2, const Vector3D c);
 };

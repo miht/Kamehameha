@@ -153,7 +153,7 @@ void Kamehameha::updatePreview() {
 
     graphicsScene->addPixmap (pix);
 
-    preview->deleteLater ();
+    delete preview;
 }
 
 void Kamehameha::on_toolButton_clicked()
@@ -242,10 +242,15 @@ void Kamehameha::updateSettings() {
     case 0: {
         //Orthographic
         scene->camera.mode = Camera::ortographic;
+        break;
     }
     case 1: {
         //Perspective
         scene->camera.mode = Camera::perspective;
+        break;
+    }
+    default: {
+        break;
     }
     }
 
@@ -255,22 +260,23 @@ void Kamehameha::updateSettings() {
     float camTranslateY = ui->lineEdit_posY->text().toFloat (&ok);
     float camTranslateZ = ui->lineEdit_posZ->text().toFloat (&ok);
 
+    qDebug() << "Updating rotation!";
     float camRotateX = ui->lineEdit_rotX->text().toFloat (&ok);
     float camRotateY = ui->lineEdit_rotY->text().toFloat (&ok);
     float camRotateZ = ui->lineEdit_rotZ->text().toFloat (&ok);
-
+    qDebug() << "Updated rotation!";
 
     Matrix4x4 translation = Matrix4x4::translation (Vector3D(camTranslateX,
                                                              camTranslateY,
                                                              camTranslateZ));
 
     Matrix4x4 rotation = Matrix4x4::rotation (Vector3D(camRotateX * M_PI/180,
-                                                       (camRotateY) * M_PI/180,
+                                                       camRotateY * M_PI/180,
                                                        camRotateZ * M_PI/180));
 
     scene->camera.world = translation * rotation;
-    qDebug() << "T2";
 
+    qDebug() << "T2";
 }
 
 void Kamehameha::on_btn_changeColor_clicked()
@@ -382,10 +388,48 @@ QIcon Kamehameha::getColoredIcon(int width, int height, const QColor color) {
 
 void Kamehameha::on_rb_wireframe_clicked()
 {
+    updateSettings();
     updatePreview ();
 }
 
 void Kamehameha::on_rb_raster_clicked()
 {
+    updateSettings();
     updatePreview();
+}
+
+void Kamehameha::on_lineEdit_posX_editingFinished ()
+{
+    updateSettings ();
+    updatePreview ();
+}
+
+void Kamehameha::on_lineEdit_posY_editingFinished()
+{
+    updateSettings ();
+    updatePreview ();
+}
+
+void Kamehameha::on_lineEdit_posZ_editingFinished()
+{
+    updateSettings ();
+    updatePreview ();
+}
+
+void Kamehameha::on_lineEdit_rotX_editingFinished()
+{
+    updateSettings ();
+    updatePreview ();
+}
+
+void Kamehameha::on_lineEdit_rotY_editingFinished()
+{
+    updateSettings ();
+    updatePreview ();
+}
+
+void Kamehameha::on_lineEdit_rotZ_editingFinished()
+{
+    updateSettings ();
+    updatePreview ();
 }

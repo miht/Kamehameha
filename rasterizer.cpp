@@ -11,10 +11,21 @@ QImage Rasterizer::generate(QImage image) {
     //out << "P3\n" << w << ' ' << h << ' ' << "255\n";
     image.fill(QColor(0, 0, 0));
 
+    float b, t, l, r;
+    float near = scene->camera.clippingPlane[0];
+    float far = scene->camera.clippingPlane[1];
+    calculatePerspective (scene->camera.angleOfView,
+                          viewportWidth/(float) viewportHeight,
+                          near, far, b, t, l, r);
+    projMatrix = getPerspectiveFrustrum(b, t, l, r, near, far);
+
     Matrix4x4 camToWorld = scene->camera.world;
 
     Matrix4x4 worldToCam;
     Matrix4x4::inverse(camToWorld, worldToCam);
+
+    Matrix4x4 camToWorld_transposed;
+    Matrix4x4::transpose(camToWorld, camToWorld_transposed);
 
     int zDepthSize = image.width () * image.height ();
     float depthBuffer[zDepthSize];
@@ -28,107 +39,85 @@ QImage Rasterizer::generate(QImage image) {
         Vertex3D v2 = face->vertices[1];
         Vertex3D v3 = face->vertices[2];
 
-        Vector3D p1, p2, p3; //v#Raster
-        p1 = Vector3D(worldToViewport (v1.position));
-        p2 = Vector3D(worldToViewport (v2.position));
-        p3 = Vector3D(worldToViewport (v3.position));
+        float cameraZ = (worldToCam * Vector3D(0, 0, 0)).z;
 
-        float cameraZ = (worldToCam * Vector3D(0,0,0)).z;
+        Vector3D p1, p2, p3;
+        p1 = v1.position;
+        p2 = v2.position;
+        p3 = v3.position;
 
-        p1.z = 1 / -(worldToCam*v1.position).z;
-        p2.z = 1 / -(worldToCam*v2.position).z;
-        p3.z = 1 / -(worldToCam*v3.position).z;
+        Vector3D p1Cam, p2Cam, p3Cam;
 
-        Vector2D uv1, uv2, uv3;
-        uv1 = v1.uv;
-        uv2 = v2.uv;
-        uv3 = v3.uv;
+        p1Cam = worldToCam * p1;
+        p2Cam = worldToCam * p2;
+        p3Cam = worldToCam * p3;
 
-        uv1 = uv1 * p1.z;
-        uv2 = uv2 * p2.z;
-        uv3 = uv3 * p3.z;
+        Vector3D n = Vector3D::cross_prod(p2Cam - p1Cam, p3Cam - p1Cam).normalized ();
+
+        Vector3D p1View, p2View, p3View;
+        p1View = worldToViewport (projMatrix * p1Cam);
+        p2View = worldToViewport (projMatrix * p2Cam);
+        p3View = worldToViewport (projMatrix * p3Cam);
+
+        p1View.z = 1 / p1View.z,
+        p2View.z = 1 / p2View.z,
+        p3View.z = 1 / p3View.z;
+
+        float area = edgeFunction(p1View, p2View, p3View);
 
         //calculate bounding box
         Vector3D max, min;
-        max.x = fmax(p1.x, fmax(p2.x, p3.x));
-        max.y = fmax(p1.y, fmax(p2.y, p3.y));
-        min.x = fmin(p1.x, fmin(p2.x, p3.x));
-        min.y = fmin(p1.y, fmin(p2.y, p3.y));
+        max.x = fmin(viewportWidth - 1, fmax(0, fmax(p1View.x, fmax(p2View.x, p3View.x))));
+        max.y = fmin(viewportHeight - 1, fmax(0, fmax(p1View.y, fmax(p2View.y, p3View.y))));
+        min.x = fmax(0.0, fmin(p1View.x, fmin(viewportWidth - 1, fmin(p2View.x, p3View.x))));
+        min.y = fmax(0.0, fmin(p1View.y, fmin(viewportHeight - 1, fmin(p2View.y, p3View.y))));
 
-        // the triangle is out of screen
-        if (min.x > image.width () - 1 || max.x < 0 || min.y > image.height ()- 1 || max.y < 0) continue;
+        for (int x = (int) min.x; x <= (int) max.x; ++x) {
+            for (int y = (int) min.y; y <= (int) max.y; ++y) {
+                Vector3D pixelSample(x + 0.5, y + 0.5, 0);
 
-        float area = edgeFunction(p1, p2, p3);
-        for (int x = std::roundf(min.x); x <= max.x; ++x) {
-            for (int y = std::roundf(min.y); y <= max.y; ++y) {
-
-                // the pixel is out of screen
-                if (x > image.width () - 1 || x < 0 || y < 0 || y > image.height () - 1)
-                    continue;
-
-                Vector3D pixelSample(x, y, 0);
-
-                float w0 = edgeFunction(p2, p3, pixelSample);
-                float w1 = edgeFunction(p3, p1, pixelSample);
-                float w2 = edgeFunction(p1, p2, pixelSample);
+                float w0 = edgeFunction(p2View, p3View, pixelSample);
+                float w1 = edgeFunction(p3View, p1View, pixelSample);
+                float w2 = edgeFunction(p1View, p2View, pixelSample);
 
                 if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+                    //Intersects triangle
                     w0 /= area;
                     w1 /= area;
                     w2 /= area;
-                    float oneOverZ = p1.z * w0 + p2.z * w1 + p3.z * w2;
+                    float oneOverZ = p1View.z * w0 + p2View.z * w1 + p3View.z * w2;
                     float z = 1 / oneOverZ;
 
-                    if(z < cameraZ) continue;
+//                    if(z > near) continue;
 
                     if (z < depthBuffer[y * image.width () + x]) {
-
-                        depthBuffer[y * image.width () + x] = z;
-
-                        Vector2D uv = uv1 * w0 + uv2 * w1 + uv3 * w2;
-
-                        uv = uv * z;
-
-                        Vector3D p1Cam, p2Cam, p3Cam;
-                        p1Cam = worldToCam * v1.position;
-                        p2Cam = worldToCam * v2.position;
-                        p3Cam = worldToCam * v3.position;
-
-
 
                         float px = (p1Cam.x/-p1Cam.z) * w0 + (p2Cam.x/-p2Cam.z) * w1 + (p3Cam.x/-p3Cam.z) * w2;
                         float py = (p1Cam.y/-p1Cam.z) * w0 + (p2Cam.y/-p2Cam.z) * w1 + (p3Cam.y/-p3Cam.z) * w2;
 
                         Vector3D pt(px * z, py * z, -z); // pt is in camera space
+
+                        depthBuffer[y * image.width () + x] = z;
+
+//                        Vector3D pt = worldToCam * (p1* w0 + p2 * w1 + p3 * w2);
                         Vector3D viewDirection = -pt.normalized ();
 
-                        //                        nt = worldToCam * nt;
-                        Vector3D nt = v1.normal * w0 + v2.normal * w1 + v3.normal * w2;
-                        nt = nt.normalized ();
+//                        if(Vector3D::dot_prod (n, viewDirection) < 0) continue;
 
-                        Vector3D n = Vector3D::cross_prod (p2Cam - p1Cam, p3Cam - p1Cam).normalized ();
-                        n = nt;
+                        Vector3D n = Vector3D::cross_prod(p2Cam - p1Cam, p3Cam - p1Cam).normalized ();
 
-                        pt = camToWorld * pt;
+                        n = v1.normal.normalized () * w0 + v2.normal.normalized () * w1 + v3.normal.normalized () * w2;
+                        n = (camToWorld_transposed * n).normalized ();
 
-                        Vector3D diffuse, specular;
-                        for(Light light : scene->lights) {
-                            Vector3D lightDir = (light.position - pt).normalized ();
-
-                            diffuse = diffuse + std::max(0.f, Vector3D::dot_prod (n, lightDir))
-                                    * light.intensity * light.color.asVector3D ();
-
-                            Vector3D bisector = (pt + lightDir).normalized();
-                            specular = specular + std::powf(fmax(0, Vector3D::dot_prod (bisector, nt)), m.spec_exp)
-                                    * light.intensity*light.color.asVector3D ();
+                        if(x == 300 && y == 300) {
+                            qDebug() << n;
+                            qDebug() << Vector3D::dot_prod(n, viewDirection);
                         }
 
-                        float nDotView = std::max(0.f, Vector3D::dot_prod (n, viewDirection));
-                        const int M = 10;
-                        float checker = (fmod(uv.x * M, 1.0) > 0.5) ^ (fmod(uv.y * M, 1.0) < 0.5);
-                        float c = 0.3 * (1 - checker) + 0.7 * checker;
-                        //                        nDotView *= c;
-                        Vector3D color = diffuse * m.diffuse + specular*m.specular;
+                        float nDotView = std::max(0.f, Vector3D::dot_prod(n, viewDirection));
+
+                        Vector3D color = nDotView * m.diffuse;
+//                        color = m.diffuse;
                         image.setPixelColor (x, y, Color(color).asQColor ());
                     }
                 }
@@ -137,3 +126,4 @@ QImage Rasterizer::generate(QImage image) {
     }
     return image;
 }
+

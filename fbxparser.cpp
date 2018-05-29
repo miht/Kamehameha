@@ -13,11 +13,15 @@ void FbxParser::process(FbxNode *node, Scene *scene) {
         return;
     }
 
+    qDebug() << "Processing node " << node->GetName();
+
     for(int i = 0; i < children; i ++) {
         FbxNode* child = node->GetChild (i);
+        qDebug() << "Iterating over child " << i;
 
         switch(child->GetNodeAttribute ()->GetAttributeType ()) {
             case FbxNodeAttribute::eLight: {
+                qDebug() << "Child i is " << i;
 
                 FbxLight* light = child->GetLight ();
                 processLight(light, scene->lights);
