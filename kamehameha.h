@@ -87,6 +87,8 @@ private slots:
     void on_lineEdit_rotY_editingFinished();
     void on_lineEdit_rotZ_editingFinished();
 
+    void on_lineEdit_fov_editingFinished();
+
 private:
     Ui::MainWindow *ui;
     QPushButton *ui_renderButton;

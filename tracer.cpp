@@ -74,12 +74,16 @@ std::uniform_real_distribution<float> distribution(-1, 1);
 QImage Tracer::generate(QImage image)
 {
     //Calculate screen coordinates here
-    float width = (float) scene->camera.viewportWidth;
-    float height = (float) scene->camera.viewportHeight;
-    float imageAspectRatio = width / height;
-    float fov = scene->camera.angleOfView;
-    float scale = tanf((fov * 0.5 * M_PI)/180.0);
-    float focalLength = scene->camera.focalLength;
+
+    float b, t, l, r;
+    float near = scene->camera.clippingPlane[0];
+    float far = scene->camera.clippingPlane[1];
+    calculatePerspective (scene->camera.angleOfView,
+                          viewportWidth/(float) viewportHeight,
+                          near, far, b, t, l, r);
+    projMatrix = getPerspectiveFrustrum(b, t, l, r, near, far);
+    Matrix4x4 projMatrix_inverse;
+    Matrix4x4::inverse(projMatrix, projMatrix_inverse);
 
     Matrix4x4 camToWorld = scene->camera.world;
     Vector3D rayOrigin = camToWorld*Vector3D(0,0,0);
@@ -90,22 +94,9 @@ QImage Tracer::generate(QImage image)
             Color col;
 
             Vector3D p = viewportToWorld (Vector2D(x + image.offset ().x (), y + image.offset ().y()));
-            Vector3D dir;
-
-            Vector3D camForward(camToWorld(2, 0), camToWorld(2, 1), camToWorld(2, 2));
-            camForward = camForward.normalized ();
-
-
-            if(scene->camera.mode == Camera::perspective) {
-                dir = (p - rayOrigin);
-            }
-            else {
-                rayOrigin = (camToWorld * p);
-                dir = camForward;
-//                dir = camToWorld*Vector3D(0,1,0); //forward
-            }
-//            qDebug() << "origin " << rayOrigin;
-//            qDebug() << "cam forward " << camForward;
+            p = projMatrix_inverse * p;
+            p = camToWorld * p;
+            Vector3D dir = p - rayOrigin;
 
             dir = dir.normalized ();
             Ray ray;

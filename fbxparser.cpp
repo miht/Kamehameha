@@ -13,45 +13,32 @@ void FbxParser::process(FbxNode *node, Scene *scene) {
         return;
     }
 
-    qDebug() << "Processing node " << node->GetName();
-
     for(int i = 0; i < children; i ++) {
         FbxNode* child = node->GetChild (i);
-        qDebug() << "Iterating over child " << i;
 
         switch(child->GetNodeAttribute ()->GetAttributeType ()) {
-            case FbxNodeAttribute::eLight: {
-                qDebug() << "Child i is " << i;
+        case FbxNodeAttribute::eLight: {
 
-                FbxLight* light = child->GetLight ();
-                processLight(light, scene->lights);
+            FbxLight* light = child->GetLight ();
+            processLight(light, scene->lights);
 
-                scene->model.metadata.numLights ++;
-                qDebug() << "Parsed eLight.";
-                break;
-            }
-            case FbxNodeAttribute::eMesh: {
+            scene->model.metadata.numLights ++;
+            break;
+        }
+        case FbxNodeAttribute::eMesh: {
+            FbxMesh* mesh = child->GetMesh ();
+            processMesh(mesh, scene->model.root->faces);
+            processMaterials (mesh, scene->model.materials);
 
-                FbxMesh* mesh = child->GetMesh ();
+            scene->model.metadata.numFaces += mesh->GetPolygonCount ();
+            scene->model.metadata.numVertices += mesh->GetControlPointsCount ();
 
-                processMesh(mesh, scene->model.root->faces);
-                scene->model.metadata.numLights ++;
-
-
-                processMaterials (mesh, scene->model.materials);
-
-
-                scene->model.metadata.numFaces += mesh->GetPolygonCount ();
-                scene->model.metadata.numVertices += mesh->GetControlPointsCount ();
-
-                scene->model.metadata.numObjects ++;
-                qDebug() << "Parsed eMesh.";
-
-                break;
-            }
-            default: {
-                break;
-            }
+            scene->model.metadata.numObjects ++;
+            break;
+        }
+        default: {
+            break;
+        }
         }
         process(child, scene);
     }
@@ -79,8 +66,6 @@ void FbxParser::processMesh(const FbxMesh *mesh, std::vector<Face*> &faces) {
             mesh->GetPolygonVertexUV (i, 1, "UVMap", uv2, um2);
             mesh->GetPolygonVertexUV (i, 2, "UVMap", uv3, um3);
 
-
-
             Vertex3D v1 = Vertex3D(Vector3D(p1[0], p1[1], p1[2]),
                     Vector3D(n1[0], n1[1], n1[2]).normalized (), Vector2D(uv1[0], uv1[1]));
             Vertex3D v2 = Vertex3D(Vector3D(p2[0], p2[1], p2[2]),
@@ -88,9 +73,12 @@ void FbxParser::processMesh(const FbxMesh *mesh, std::vector<Face*> &faces) {
             Vertex3D v3 = Vertex3D(Vector3D(p3[0], p3[1], p3[2]),
                     Vector3D(n3[0], n3[1], n3[2]).normalized (), Vector2D(uv3[0], uv3[1]));
 
-            int materialIndex = mesh->GetElementMaterial()->GetIndexArray ().GetAt(i);
-
-            const char* mat = mesh->GetNode ()->GetMaterial(materialIndex)->GetName();
+            const char* mat = "None";
+            if(mesh->GetElementMaterial () != nullptr) {
+                //Has root material
+                int materialIndex = mesh->GetElementMaterial()->GetIndexArray ().GetAt(i);
+                mat = mesh->GetNode ()->GetMaterial(materialIndex)->GetName();
+            }
 
             faces.push_back (new Triangle(v1, v2, v3, mat));
         }

@@ -104,7 +104,6 @@ public:
 
     Matrix4x4 operator*(Matrix4x4 m);
     Vector3D operator*(const Vector3D v);
-    Vector4D operator*(const Vector4D v);
 
     friend std::ostream& operator<<(std::ostream& Str, Matrix4x4& v);
     friend QDebug operator<<(QDebug d, Matrix4x4 &m);

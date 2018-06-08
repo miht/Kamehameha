@@ -425,44 +425,28 @@ float& Matrix4x4::operator()(const int i, const int j) {
 }
 
 Vector3D Matrix4x4::operator*(const Vector3D v) {
-    float x[4] = {v.x, v.y, v.z, 1};
-    float res[4] = {0,0,0,0};
+    Vector3D out;
+    out.x   = v.x * (*this)(0,0) + v.y * (*this)(0,1) + v.z * (*this)(0,2) + /* v.z = 1 */ (*this)(0,3);
+    out.y   = v.x * (*this)(1,0) + v.y * (*this)(1,1) + v.z * (*this)(1,2) + /* v.z = 1 */ (*this)(1,3);
+    out.z   = v.x * (*this)(2,0) + v.y * (*this)(2,1) + v.z * (*this)(2,2) + /* v.z = 1 */ (*this)(2,3);
+    float w = v.x * (*this)(3,0) + v.y * (*this)(3,1) + v.z * (*this)(3,2) + /* v.z = 1 */ (*this)(3,3);
 
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            res[i] += (*this)(i, j) * x[j];
-        }
+    // normalize if w is different than 1 (convert from homogeneous to Cartesian coordinates)
+    if (w != 1.0) {
+        out.x /= w;
+        out.y /= w;
+        out.z /= w;
     }
-//    Vector4D ret(res[0], res[1], res[2], res[3]);
-
-//    ret = ret / ret.w;
-    return Vector3D(res[0]/res[3], res[1]/res[3], res[2]/res[3]);
-}
-
-Vector4D Matrix4x4::operator*(const Vector4D v) {
-    float x[4] = {v.x, v.y, v.z, v.w};
-    float res[4] = {0,0,0,0};
-
-    for(int i = 0; i < 4; i++) {
-        for(int j = 0; j < 4; j++) {
-            res[i] += (*this)(i, j) * x[j];
-        }
-    }
-
-    Vector4D ret(res[0], res[1], res[2], res[3]);
-
-    ret = ret / ret.w;
-    return ret;
+    return out;
 }
 
 Matrix4x4 Matrix4x4::operator*(Matrix4x4 m) {
-    Matrix4x4 m_this = (*this);
     Matrix4x4 res;
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 4; j++) {
             float sum = 0;
             for(int k = 0; k < 4; k++) {
-                float t1 = m_this(i, k);
+                float t1 = (*this)(i, k);
                 float t2 = m(k, j);
                 sum += t1 * t2;
             }

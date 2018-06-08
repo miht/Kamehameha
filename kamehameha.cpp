@@ -201,13 +201,13 @@ int Kamehameha::showMessageDialog(QString title, QString message) {
 
 void Kamehameha::on_rb_ortho_clicked()
 {
-    scene->camera.mode = Camera::ortographic;
-}
+    updateSettings ();
+    updatePreview ();}
 
 void Kamehameha::on_rb_persp_clicked()
 {
-    scene->camera.mode = Camera::perspective;
-}
+    updateSettings ();
+    updatePreview ();}
 
 void Kamehameha::updateSettings() {
     //Attempt to parse numbers
@@ -326,12 +326,16 @@ bool Kamehameha::importModel(const QString path, Model &model) {
 
     // Declare the path and filename of the file containing the scene.
     // In this case, we are assuming the file is in the same directory as the executable.
-    const char* lFilename = path.toLatin1();
+//    qDebug() << path;
+    char *lFilename = new char[100]();
+    strcpy(lFilename, path.toUtf8 ());
 
     qDebug() << lFilename;
 
     // Initialize the importer.
     bool lImportStatus = lImporter->Initialize(lFilename, -1, lSdkManager->GetIOSettings());
+
+    delete lFilename;
 
     if(lImportStatus == false) {
         printf("Call to FbxImporter::Initialize() failed.\n");
@@ -429,6 +433,12 @@ void Kamehameha::on_lineEdit_rotY_editingFinished()
 }
 
 void Kamehameha::on_lineEdit_rotZ_editingFinished()
+{
+    updateSettings ();
+    updatePreview ();
+}
+
+void Kamehameha::on_lineEdit_fov_editingFinished()
 {
     updateSettings ();
     updatePreview ();
