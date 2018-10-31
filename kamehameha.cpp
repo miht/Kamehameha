@@ -102,7 +102,7 @@ void Kamehameha::on_renderButton_clicked()
         tracer->show ();
     }
     else {
-        showMessageDialog (tr("Bög!"), tr("No objects found. Please specify a non-empty model file."));
+        showMessageDialog (tr("Error"), tr("No objects found. Please specify a non-empty model."));
     }
 
 }
