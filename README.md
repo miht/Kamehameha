@@ -32,7 +32,7 @@ starting at one at which point the image will be rendered on a single thread.
 
 ##### KD Trees
 Kamehameha utilizes KD Trees, an idea that I received from Emma Carlson at [FrogSlayer](https://blog.frogslayer.com/kd-trees-for-faster-ray-tracing-with-triangles/).
-KT Trees are binary trees in which nodes store triangles within the tree depending on their location 
+KD Trees are binary trees in which nodes store triangles within the tree depending on their location 
 relative to the longest axis of the triangles within the parent node. 
 
 ![Screenshot](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/3dtree.png/250px-3dtree.png)
